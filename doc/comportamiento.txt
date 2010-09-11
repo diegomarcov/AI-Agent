@@ -1,0 +1,3 @@
+Si un agente no se conoce, y el fight_skill propio es bajo, nuestro agente se mantendrá fuera del rango de ataque del otro, hasta caracterizar de alguna manera su comportamiento (es decir, si es un agente agresivo, si es cobarde, etc).
+
+Si un agente es avistado, y se encuentra de espaldas, tendrá mayor probabilidad de ser atacado (se explota el hecho de tener dos turnos de ataque de ventaja).
