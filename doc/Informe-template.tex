@@ -1,0 +1,548 @@
+\documentclass[a4paper,10pt,spanish]{article}
+\usepackage{babel}
+\usepackage{listings}
+
+\lstset{language=Java,
+frame=single,
+basicstyle=\footnotesize,
+tabsize=3,
+showtabs=false,
+showspaces=false,
+showstringspaces=false}
+
+\begin{document}
+
+\begin{titlepage}
+
+%opening
+\title{{\bf Proyecto 1}\\ Algoritmos y complejidad\vspace{10mm}}
+\author{{\bf Profesor:}\\ Fillotrani, Pablo\\
+{\bf Asistente:}\\ Casalini, Mar\'ia Clara\\
+{\bf Comisi\'on:}\\ Touceda, Tom\'as. LU: 84024}
+\date{}
+
+\maketitle
+
+\thispagestyle{empty}
+
+\end{titlepage}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Aclaraciones iniciales}
+
+Siempre que se hable de $n$, se refiere a la cantidad de objetos que potencialmente ser\'an ingresados en la mochila, salvo que se indique lo contrario.
+
+\newcounter{Lcount}
+Las siguientes operaciones se las considera de tiempo constante:
+\begin{list}{\Roman{Lcount}}{}
+\usecounter{Lcount}
+ \item Asignaciones definidas \'unicamente con el operador binario $=$.
+ \item Las operaciones que calculan la longitud de un arreglo o string.
+ \item Operaciones aritm\'eticas sobre tipos base.
+ \item Operaciones de set y get de una clase.
+\end{list}
+
+
+\section{Definici\'on del problema de la mochila}
+
+Dados $n$ objetos y una mochila. Cada elemento $i$ posee un peso positivo denotado $w_i$ y un valor positivo denotado $v_i$. La mochila puede guardar hasta un peso m\'aximo de $W$. El objetivo es llenar la mochila de manera tal que maximice el valor de los objetos en ella.
+
+En este trabajo se tratan dos versiones de este problema: una en la cual los objetos se pueden dividir, por lo que se puede guardar una porci\'on de alguno de ellos en la mochila; y otra en la cual los objetos son indivisibles, por ende un objeto puede estar o no estar en la mochila. La primer versi\'on se aplica a los algoritmos \em Greedy\em, la segunda al algoritmo de \em Programaci\'on din\'amica\em.
+
+\newpage
+
+\section{Algoritmos utilizados}
+	\subsection{Greedy}
+	\subsubsection{Estrategia general}
+	En esta versi\'on del problema los objetos se pueden dividir, por lo que existe la posibilidad de llevar una fracci\'on $x_i$ del objeto $i$, con $0\leq x_i\leq 1$, contribuyendo asi con $x_i\times w_i$ en peso y $x_i\times v_i$ en valor a la mochila.
+	El objetivo en este caso es maximizar $\sum_{i=1}^n x_i\times v_i$ teniendo en cuenta que $\sum_{i=1}^n x_i\times w_i \leq W$.
+	
+	En la resoluci\'on greedy a este problema, los componentes principales son:
+	\begin{list}{}{}
+	 \item[-] {\bf El conjunto de candidatos:} los objetos que potencialmente se agregar\'an a la mochila
+	 \item[-] {\bf El conjunto soluci\'on:} un $array=\{{x_1, .., x_n}\}$ de porciones de inclusi\'on de cada uno de los $n$ objetos.
+	 \item[-] {\bf Funci\'on de viabilidad:} una soluci\'on es viable si respeta el objetivo planteado anteriormente.
+	 \item[-] {\bf Funci\'on objetivo:} es la cantidad de objetos que hay en la mochila.
+	 \item[-] {\bf Funci\'on de selecci\'on:} Se ver\'an dos funciones planteadas en las Secciones \ref{gre1} y \ref{gre2}.
+	\end{list}
+	
+	Una soluci\'on es considerada optimal si cumple que $\sum_{i=1}^n x_i\times w_i = W$. Se asume que $\sum_{i=1}^n w_i > W$, ya que si esto no se cumple, es claro que la soluci\'on optimal es poner todos los objetos en la mochila.
+	
+	La estructura b\'asica de la soluci\'on Greedy a este problema es la siguiente:
+	\begin{verbatim}
+function knapsack(w[1..n], v[1..n], W) : array [1..n]
+   // Primero se inicializan las porciones de objetos
+   for i=1 to n do x[i]= 0
+   peso= 0
+   
+   // Ciclo Greedy
+   while peso < W do
+      i= seleccionar() // Selecciona el mejor objeto de los candidatos restantes
+      if peso+w[i]<=W then 
+         x[i]= 1
+         peso= peso+w[i]
+      else
+         x[i]= (W-peso)/w[i]
+         peso= W
+
+   return x
+	\end{verbatim}
+	
+	Existen 3 formas de seleccionar los objetos: m\'aximo $w_i$, m\'aximo $v_i$ o m\'aximo $v_i/w_i$. En este caso, la forma de selecci\'on que genera una soluci\'on optimal es la tercera.
+	
+	\subsubsection{C\'odigo de la implementaci\'on con Heaps}
+	Existen diversas maneras de implementar la funci\'on de selecci\'on, una de ellas es la de utilizar un Heap como estructura para almacenar los objetos candidatos ordenados de forma tal que el elemento ra\'iz sea el que tiene el m\'aximo cociente $v_i/w_i$.
+	
+	Para la funci\'on de selecci\'on (heapSelect) se selecciona el m\'aximo elemento del \'arbol Heap, es decir la ra\'iz, y se lo elimina de la estructura. Esto tiene un orden de tiempo de ejecuci\'on considerable, que luego se explicar\'a c\'omo incide esto en el tiempo de ejecuci\'on del algoritmo.
+	
+	\label{gre1}
+		\begin{lstlisting}
+private int heapSelect(Heap h) {
+	Item max = h.findMax();
+	h.deleteMax();
+	return max.getPos();
+}
+	
+public void heapMethod() {
+	float x[] = new float[this.w.length];
+	Heap h = new Heap(this.w,this.v);
+	for(int i=0; i<this.w.length; i++)
+		x[i] = 0;
+	int weight = 0, value = 0;
+	int i;
+	while(weight<this.W && !h.empty()) {
+		i = heapSelect(h);
+		if(weight+this.w[i]<=this.W) {
+			x[i] = 1;
+			weight+=this.w[i];
+			value+=this.v[i];
+		} else {
+			x[i] = (float)(this.W-weight)/(float)this.w[i];
+			weight = this.W;
+			value+=x[i]*this.v[i];
+		}
+	}
+	
+	this.finalW = weight;
+	this.finalValue = value;
+	this.finalSelection = x;
+}
+		\end{lstlisting}
+	
+	\subsubsection{C\'odigo de la implementaci\'on con MergeSort}
+	\label{gre2}
+	Otra forma de implementar la funci\'on de selecci\'on es a trav\'es de la utilizaci\'on de un ordenamiento previo de los objetos. En este caso en particular se implement\'o el ordenamiento MergeSort.
+	
+	La funci\'on de selecci\'on no est\'a tan definida como en el caso anterior ya que, teniendo en cuenta que tenemos un arreglo unidimensional de objetos ordenados de mayor a menor $v_i/w_i$, la selecci\'on se realiza de forma secuencial y por ende en tiempo constante.
+	
+		\begin{lstlisting}
+private Item[] merge(Item s1[], Item s2[]) {
+	int i = 0, j = 0;
+	int len = (s1.length+s2.length);
+	Item t[] = new Item[len];
+	for(int k=0; k<len; k++) {
+		if(i<s1.length && j<s2.length) {
+			if(s1[i].getAverage()<s2[j].getAverage())
+				t[k] = s1[i++];
+			else
+				t[k] = s2[j++];
+		} else if(i>=s1.length && j<s2.length) {
+			t[k] = s2[j++];
+		} else if(i<s1.length && j>=s2.length) {
+			t[k] = s1[i++];
+		}
+	}
+
+	return t;
+}
+
+private Item[] subArray(Item s[], int init, int end) {
+	int size = end-init+1;
+	Item tmp[] = new Item[size];
+	System.arraycopy(s, init, tmp, 0, size);
+	return tmp;
+}
+
+private Item[] mergeSort(Item s[]) {
+	Item s1[],s2[],s3[];
+	if((s.length) < 2) {
+		return s;
+	} else {
+		s1 = this.subArray(s, 0, (s.length-1)/2);
+		s2 = this.subArray(s, 1+((s.length-1)/2), s.length-1);
+		s1 = mergeSort(s1);
+		s2 = mergeSort(s2);
+		s3 = merge(s1,s2);
+		
+		return s3;
+	}
+}
+
+public void sortMethod() {
+	float x[] = new float[this.w.length];
+	Item s[] = new Item[this.w.length];
+	for(int i=0; i<this.w.length; i++) {
+		s[i] = new Item();
+		s[i].setAverage((float)this.v[i]/(float)this.w[i]);
+		s[i].setPos(i);
+	}
+	s = this.mergeSort(s);
+	for(int i=0; i<this.w.length; i++)
+		x[i] = 0;
+	int weight = 0;
+	int i;
+	int value = 0;
+	int lastSelected = s.length-1;
+	while(weight<this.W && lastSelected>=0) {
+		i = s[lastSelected--].getPos();
+		if(weight+w[i]<=this.W) {
+			x[i] = 1;
+			value+=this.v[i];
+			weight+=this.w[i];
+		} else {
+			x[i] = (float)(this.W-weight)/(float)this.w[i];
+			weight = this.W;
+			value+=this.v[i]*x[i];
+		}
+	}
+
+	this.finalW = weight;
+	this.finalValue = value;
+	this.finalSelection = x;
+}
+		\end{lstlisting}
+
+	\subsection{Programaci\'on din\'amica}
+	\subsubsection{Resoluci\'on}
+	Aqui se resuelve la versi\'on del problema en la cual los objetos son indivisibles. En este caso el objetivo sigue siendo maximizar $\sum_{i=1}^n x_i\times v_i$ teniendo en cuenta que $\sum_{i=1}^n x_i\times w_i \leq W$, con la consideraci\'on que $x_i \epsilon \{0,1\}$.
+	
+	Esta versi\'on del problema no se puede resolver de forma optimal con la estrategia Greedy planeada, por ello se utiliza Programaci\'on Din\'amica.
+	
+	Para esto se genera una matriz $V[1..n,1..W]$ con una fila por cada objeto disponible, y una columna para cada peso desde $0$ hasta $W$.
+	
+	$V[i,j]$ ser\'a el m\'aximo valor de los objetos que se pueden transportar si el l\'imite de peso es $j$ ($0\leq j\leq W$), y si solo incluimos objetos desde el 1 hasta el $i$. El valor m\'aximo que se puede llevar en la mochila se encontrar\'a en $V[n,W]$, y el arreglo final de porciones de objetos a llevar en la mochila se deber\'an obtener teniendo en cuenta la matriz $V$ generada.
+	
+	Dado un objeto existen dos posibilidades: o se lo agrega a la mochila, o no. Elegir una posibilidad o la otra depende de qu\'e convenga m\'as a la hora de cumplir el objetivo. En otras palabras, para la posici\'on $V[i,j]$, se eligir\'a el m\'aximo entre $V[i-1,j]$ (no se agrega el objeto $i$ a la mochila) y $V[i-1,j-w_i]+v_i$ (agregamos el objeto $i$ a la mochila). De este an\'alisis surge la siguiente recurrencia:
+
+\vspace{5mm}
+\begin{math}
+V[i,j] =
+\left\{
+	\begin{array}{ll}
+		0  & \mbox{si } i = 0 \\
+		V[i-1,j]  & \mbox{si } i > 0 \mbox{ y } (j - w_i) < 0 \\
+		max(V[i-1,j], V[i-1,j-w_i]+v_i) & \mbox{en otro caso}
+	\end{array}
+\right.
+\end{math}
+	
+	\subsubsection{C\'odigo}
+	
+	\label{dyn1}
+		\begin{lstlisting}
+	public void dynMethod() {
+		int ilen = this.w.length;
+		int jlen = this.W+1;
+		int V[][] = new int[ilen][jlen];
+		
+		for(int i=0; i<ilen; i++) {
+			for(int j=0; j<jlen; j++) {
+				if(j==0)
+					V[i][j]= 0;
+				else if(i==0) {
+					V[i][j]= 0;
+					if(this.w[i]<=j)
+						V[i][j]=v[i];
+				} else if(j-this.w[i]>=0)
+					V[i][j]= Math.max(V[i-1][j], 
+						V[i-1][j-this.w[i]]+this.v[i]);
+				else
+					V[i][j]= V[i-1][j];
+			}
+		}
+		
+		this.finalValue = V[ilen-1][jlen-1];
+		this.finalSelection = recoverItems(V);
+	}
+	
+	private float[] recoverItems(int V[][]) {
+		int i = this.w.length - 1;
+		int j = this.W;
+		float res[] = new float[this.w.length];
+		int weight = 0;
+		
+		while(i>0) {
+			res[i]= 0;
+			if((j-this.w[i])>=0) {
+				if((V[i][j]!=V[i-1][j]) && 
+					(V[i][j]==(V[i-1][j-this.w[i]]+this.v[i]))) {
+					res[i]= 1;
+					j= j-this.w[i];
+					weight+= this.w[i];
+				}
+					
+			}
+			i--;
+		}
+		
+		this.finalW = weight;
+		
+		return res;
+	}
+		\end{lstlisting}
+
+\newpage
+\section{An\'alisis te\'orico de los algoritmos}
+	\subsection{Resoluci\'on por una estrategia greedy}
+		\subsubsection{M\'etodo con Heap}
+		En esta secci\'on se analizar\'a el algoritmo presentado en la Secci\'on~\ref{gre1}.
+		
+		\vspace{4mm}
+		La principal estructura utilizada en la primer estrategia de soluci\'on es la de Heap. El Heap es un \'arbol binario esencialmente completo cuya propiedad principal es la de almacenar los nodos de forma tal que el valor en un nodo es mayor o igual que el de sus hijos. Por ende, si almacenamos en un Heap los distintos objetos teniendo como par\'ametro el cociente $v_i/w_i$, como la idea es maximizar este valor, en cada iteraci\'on se seleccionar\'a el elemento raiz y se lo eliminar\'a.
+
+	La operaci\'on para crear el Heap desde un arreglo de objetos es la siguiente:
+	\begin{lstlisting}
+public void makeHeap() {
+	for(int i=this.size/2; i>=0; i--)
+		siftDown(i);
+}
+	\end{lstlisting}
+	
+	El algoritmo para hacer siftDown es el siguiente:
+	\begin{lstlisting}
+private void siftDown(int i) {
+	int k = i;
+	int j = 0;
+	int n = this.size-1;
+	do {
+		j = k;
+		if(2*j<=n && 
+			this.contents[2*j].getAverage()>
+			this.contents[k].getAverage())
+			k = 2*j;
+		if(2*j<n && 
+			this.contents[2*j+1].getAverage()>
+			this.contents[k].getAverage())
+			k = 2*j+1;
+		exchange(j,k);
+	} while(j!=k);
+}
+	\end{lstlisting}
+
+	Para analizar el orden del tiempo de ejecuci\'on de makeHeap debemos tomar
+como bar\'ometro el bucle while de siftDown. Para realizar siftDown de un nodo
+en el nivel $r$, en el peor de los casos se itera $r+1$. Sabiendo que la altura
+de un Heap de $n$ nodos es de $\lfloor \log n \rfloor = k$, y que en el nivel
+$m$ hay a lo sumo $2^{k-m}$ nodos, cuando aplicamos makeHeap se realiza
+siftDown en cada nodo interno, por lo que si $t$ es la cantidad total de
+iteraciones alrededor del bucle while, se tiene que
+
+\begin{equation}
+ t \leq 2 \times 2^{k-1} + 3 \times 2^{k-2} + ... + (k+1) \times 2^0
+\end{equation}
+\begin{equation}
+ t \leq - 2^k + 2^k + 2 \times 2^{k-1} + 3 \times 2^{k-2} + ... + (k+1) \times 2^0
+\end{equation}
+\begin{equation}
+\label{a}
+ t \le - 2^k + 2^{k+1} \times ( 2^{-1} + 2 \times 2^{-2} + 3 \times 2^{-3} + ... )
+\end{equation}
+
+Sabemos que
+
+\begin{equation}
+ 1 \times r^1 + 2 \times r^2 + ... + k \times r^k = \frac{r}{(1 - r)^2}
+\end{equation}
+
+con \begin{equation}r = 2^{-1}\end{equation}
+de la ecuaci\'on \ref{a} resulta
+
+\begin{equation}
+ t \le - 2^k + 2^{k+1} \times ( \frac{2^{-1}}{( 1 - 2^{-1} )^2} )
+\end{equation}
+\begin{equation}
+ t \le - 2^k + 2^{k+1} \times 2
+\end{equation}
+\begin{equation}
+ t \le - 2^k + 2^{k+2}
+\end{equation}
+\begin{equation}
+ t \le 2^{k+2} - 2^k = 2^{\lfloor \log n \rfloor} \times 2^2 - 2^{\lfloor \log n \rfloor}
+\end{equation}
+\begin{equation}
+ t \le n^{\lfloor \log 2 \rfloor} \times ( 4 - 1 )
+\end{equation}
+\begin{equation}
+ t \le 3 \times n
+\end{equation}
+
+Por lo que se puede concluir que makeHeap es de $O(n)$.
+
+Sabiendo esto, y viendo la estructura del algoritmo de la Secci\'on~\ref{gre1}, sabemos que la creaci\'on del Heap se realiza una \'unica vez al comienzo, luego se inicializan los elementos del arreglo soluci\'on en cero, y por \'ultimo se recorre el bucle while un m\'aximo de veces igual a la cantidad total de objetos ($n$). Dentro del bucle, la \'unica operaci\'on que no se puede considerar como de tiempo constante es heapSelect, la cual encuentra el m\'aximo y lo elimina. Encontrar el m\'aximo es de $O(1)$ ya que simplemente devuelve la ra\'iz del Heap, y la opreaci\'on deleteMax toma el elemento del nivel 0 m\'as a la derecha, lo coloca en la ra\'iz y realiza siftDown ($O(\log n)$) sobre el mismo.
+
+Es decir, la funci\'on heapMethod para $n$ objetos (dejando de lado las operaciones de tiempo constante) tiene un orden de:
+
+$O(n) + O(n) + O(n\log n) = max(O(n), O(n), O(n\log n)) = O(n\log n)$
+
+	\subsubsection{M\'etodo con MergeSort}
+	En esta secci\'on se analizar\'a el algoritmo presentado en la Secci\'on~\ref{gre2}.
+	
+	\vspace{4mm}
+	Para analizar el orden del tiempo de ejecuci\'on de la operaci\'on sortMethod, primero debemos analizar el orden del tiempo de ejecuci\'on de la operaci\'on mergeSort.
+	
+	Sea $t(n)$ el tiempo que toma mergeSort en ordenar $n$ elementos. Sabiendo que el m\'etodo subArray es de $O(n)$, se puede ver que el m\'etodo merge es tambi\'en de orden lineal $O(n)$. Por lo tanto podemos ver que
+
+\[
+ t(n)=t(\lfloor\frac{n}{2}\rfloor) + t(\lceil\frac{n}{2}\rceil) + g(n)
+\]
+
+siendo $c$ una constante, y $g(n) \epsilon \Theta(n)$.
+
+Utilizando el m\'etodo del Teorema Maestro, y sabiendo que considerar a $\lfloor\frac{n}{2}\rfloor$ y a $\lceil\frac{n}{2}\rceil$ como $\frac{n}{2}$ no afecta el comportamiento asint\'otico de la recurrencia, se puede asumir que 
+
+\[
+ t(n)=2\times t(\frac{n}{2}) + g(n)
+\]
+	
+	tenemos $a = 2$, $b = 2$ y $\log_2 2 = 1$, como $g(n) \epsilon \Theta(n)$, entramos en el caso 2 del Teorema Maestro por lo que se puede afirmar que $t(n) \epsilon \Theta(n\log n)$.
+	
+	Sabiendo esto, y viendo el algoritmo implementado en la Secci\'on~\ref{gre2}, el algoritmo toma $\Theta(n)$ en crear el arreglo $s$ de $n$ Items y en inicializar los $n$ elementos del arreglo soluci\'on, luego toma $\Theta (n\log n)$ en ordenar los elementos. El algoritmo de selecci\'on en este caso es de $O(1)$, y siendo que en el peor de los casos el bucle while itera $n$ veces, se tiene que
+	
+	\[
+	 \Theta (n) + \Theta (n) + \Theta (n\log n) + \Theta (n) = max(\Theta (n), \Theta (n), \Theta (n\log n), \Theta (n)) 
+	\]
+	
+	Por lo que podemos decir que sortMethod $ \epsilon $ $\Theta (n\log n)$.
+	
+	\subsection{Resoluci\'on por estrategia de programaci\'on din\'amica}
+	En esta secci\'on se analizar\'a el algoritmo presentado en la Secci\'on~\ref{dyn1}.
+	
+	\vspace{4mm}
+	Para analizar el orden del tiempo de ejecuci\'on de dynMethod primero tenemos que analizar el m\'etodo recoverItems.
+	
+	Suponiendo que se tienen $n$ objetos candidatos y sea $W$ el peso m\'aximo soportado en la mochila. Este algoritmo utiliza una matriz de $n\times W$, por lo que en el peor de los casos primero se van a recorrer las $n$ filas y luego las $W$ columnas recolectando los items agregados, por lo que recorverItems $\epsilon$ $O(n + W)$.
+	
+	El m\'etodo dynMethod recorre la matriz $n\times W$ veces en los dos bucles for anidados, cuyo cuerpo se puede considerar de $O(1)$ y luego ejecuta recoverItems cuyo orden es de $O(n + W)$, por lo que dynMethod tiene un orden de tiempo de ejecuci\'on de $max(O(n\times W), O(n + W))$, es decir que dynMethod $\epsilon$ $O(n\times W)$.
+
+\newpage
+\section{An\'alisis emp\'irico}
+
+	\subsection{Instancias utilizadas}
+	
+	Se utilizaron 20 casos de tests generados de forma aleatoria tanto en el peso m\'aximo soportado por la mochila, como en la cantidad de objetos, y valor y peso de cada uno de ellos, los archivos de cada instancia de prueba est\'an presentes en el directorio \em tests\em  dentro del zip entregado.
+	
+	\subsection{Resultados}
+	\label{res}
+	A continuaci\'on se muestran los resultados promediados de las 20 instancias de prueba.
+	
+	\vspace{5 mm}
+	\begin{tabular}{ | c | c | c | c | c |}
+	\hline
+	 Algoritmo & N & W & Tiempo en nanosegundos & Orden de algoritmo \\ \hline
+	 Greedy(1) & 47.15 & 42.2 & 133145.45 & $O(n\times \log n)$\\ \hline
+	 Greedy(2) & 47.15 & 42.2 & 136162.66 & $O(n\times \log n)$\\ \hline
+	 Din\'amica & 47.15 & 42.2 & 117947.9 & $O(n\times W)$\\ \hline
+	\end{tabular}
+	
+	\vspace{4mm}
+	Se realizaron otras pruebas con casos m\'as extremos de cantidad de elementos para analizar el comportamiento de los algoritmos Greedy:
+	\vspace{4mm}
+	\begin{center}
+	\begin{tabular}{ | r | l | }
+	 \hline
+	 {\bf Nombre del test } & test1 \\ \hline
+	 {\bf W } & 20 \\ \hline
+	 {\bf Cantidad de objetos } & 1777 \\ \hline
+	 {\bf M\'etodo } & Heap \\ \hline
+	 {\bf Tiempo tomado } & 5266312 ns \\ \hline
+	\end{tabular}
+	
+	\vspace{4mm}
+	
+	\begin{tabular}{ | r | l | }
+	 \hline
+	 {\bf Nombre del test } & test1 \\ \hline
+	 {\bf W } & 20 \\ \hline
+	 {\bf Cantidad de objetos } & 1777 \\ \hline
+	 {\bf M\'etodo } & MergeSort \\ \hline
+	 {\bf Tiempo tomado } & 3648508 ns \\ \hline
+	\end{tabular}
+	
+	\vspace{4mm}
+	
+	\begin{tabular}{ | r | l | }
+	 \hline
+	 {\bf Nombre del test } & test0 \\ \hline
+	 {\bf W } & 32 \\ \hline
+	 {\bf Cantidad de objetos } & 8029 \\ \hline
+	 {\bf M\'etodo } & Heap \\ \hline
+	 {\bf Tiempo tomado } & 10297957 ns \\ \hline
+	\end{tabular}
+	
+	\vspace{4mm}
+	
+	\begin{tabular}{ | r | l | }
+	 \hline
+	 {\bf Nombre del test } & test0 \\ \hline
+	 {\bf W } & 32 \\ \hline
+	 {\bf Cantidad de objetos } & 8029 \\ \hline
+	 {\bf M\'etodo } & MergeSort \\ \hline
+	 {\bf Tiempo tomado } & 13338847 ns \\ \hline
+	\end{tabular}
+	\end{center}
+	
+% 	test1:
+% 
+% 	sort: Tiempo tomado: 3648508
+% 	heap: Tiempo tomado: 5266312
+% 	
+% 	test0:
+% 
+% 	sort: Tiempo tomado: 13338847
+% 	heap: Tiempo tomado: 10297957
+% 	
+% 	\begin{tabular}{ | c | c | c | c | c |}
+% 	\hline
+% 	 Algoritmo & N & W & Tiempo en nanosegundos & Orden de algoritmo \\ \hline
+% 	 Greedy(1) & 47.15 & 42.2 & 133145.45 & $O(n\times \log n)$\\ \hline
+% 	 Greedy(2) & 47.15 & 42.2 & 136162.66 & $O(n\times \log n)$\\ \hline
+% 	 Din\'amica & 47.15 & 42.2 & 117947.9 & $O(n\times W)$\\ \hline
+% 	\end{tabular}
+
+\newpage
+	\section{Conclusiones}
+	
+% 	Si bien el an\'alisis emp\'irico sobre un algoritmo no suele ser muy representativo porque resulta ser dependiente del hardware, y la plataforma en la que la aplicaci\'on corre, en este caso revela cierto comportamiento de los algoritmos que en el an\'alisis te\'orico no se logra ver.
+% 	
+% 	Si vemos los resultados comparativos de la Secci\'on~\ref{res}, en un principio puede que no tenga sentido la similitud de tiempo de ejecuci\'on promedio ya que los dos algoritmos Greedy deber\'ian ser m\'as r\'apidos que el de Programaci\'on Din\'amica, pero si analizamos con m\'as detenimiento cada algoritmo es facil ver que los dos que persiguen una estrategia Greedy tienen constantes ocultas por la notaci\'on asint\'otica que realmente hacen a la diferencia.
+% 	
+% 	El algoritmo de la Secci\'on~\ref{gre1} utiliza la estructura Heap para representar el conjunto de candidatos, para ello al comienzo del algoritmo se crea esta estructura ($O(n)$), luego se inicializa el arreglo soluci\'on $x$ ($O(n)$), y luego comienza el bucle Greedy.
+% 	
+% 	En el algoritmo de la Secci\'on~\ref{gre2} se utiliza un m\'etodo de ordenamiento para luego realizar la selecci\'on en tiempo constante. Para ello primero se crea el arreglo de Items a ordenar ($O(n)$), luego se lo ordena ($\Theta(n\log n)$), y por \'ultimo se inicializa el arreglo soluci\'on $x$ ($O(n)$).
+% 	
+% 	Por \'ultimo, y a diferencia de los dos algoritmos nombrados con anterioridad, el presentado en la Secci\'on~\ref{dyn1} no realiza ning\'un tipo de inicializaci\'on previa que no sea de orden constante, sino que entra de forma directa en los bucles for anidados que conllevan a un $O(n\times W)$ y luego realiza la b\'usqueda de qu\'e objetos se incluyeron en la mochila ($O(n + W)$).
+% 	
+% 	Si bien el orden del tiempo de ejecuci\'on es mejor en los algoritmos Greedy presentados, cuando los valores de $n$ son elevados, el tiempo de ejecuci\'on real es similar en cualquiera de los tres algoritmos presentados.
+
+	\subsection{Greedy}
+	
+	De las dos implementaciones Greedy que se presentaron lo que cabe recalcar es el m\'etodo de selecci\'on de objetos. En la primer implementaci\'on se utiliza una estructura de Heap, cuyo ordenamiento interno resulta en un algoritmo de selecci\'on de orden $\log n$, y un tiempo de inicializaci\'on de la estructura de orden lineal. En la segunda implementaci\'on se organizan los elementos con un algoritmo de ordenamiento MergeSort, el cual permite una selecci\'on de objetos de orden constante, y un orden $n\log n$ antes de comenzar el ciclo Greedy para ordenar la estructura.
+	
+	En los resultados emp\'iricos se puede ver que las diferencias en las funciones de selecci\'on no modifican en gran magnitud el tiempo neto que lleva computar cada algoritmo. La sobrecarga de inicializaci\'on que tiene el algoritmo con MergeSort se amortiza con el tiempo de selecci\'on constante; comport\'andose, en cuestiones de tiempo, como el algoritmo que utiliza un Heap.
+	
+	De esta forma, vemos que el an\'alisis te\'orico se corresponde con el emp\'irico para estas dos implementaciones. 
+	
+	\subsection{Programaci\'on Din\'amica}
+	
+	La resoluci\'on implementada por Programaci\'on Din\'amica posee dos cuestiones a recalcar.
+	
+	La primera es el orden del tiempo de ejecuci\'on, el cual es de $O(n\times W)$ a diferencia de los algoritmos Greedy que solo dependian de la cantidad de elementos. Esto hace que con una instancia con pocos objetos y un W muy elevado, el algoritmo lleve m\'as tiempo del que intuitivamente se pueda esperar.
+	
+	La segunda es que resuelve una versi\'on del problema que con la estrategia Greedy no siempre concluye en un resultado optimal. Lo que hace que, aun cuando con un $n$ y un $W$ similares el algoritmo se aproxima a $O(n^2)$, esta alternativa genera una soluci\'on indefectiblemente optimal y por ello es la utilizada para casos como este.
+	
+\end{document}
