@@ -1,0 +1,81 @@
+\documentclass[a4paper,10pt,spanish]{article}
+\usepackage{babel}
+\usepackage{listings}
+
+\lstset{language=Prolog,
+frame=single,
+basicstyle=\footnotesize,
+tabsize=3,
+showtabs=false,
+showspaces=false,
+showstringspaces=false}
+
+\begin{document}
+
+\begin{titlepage}
+
+%opening
+\title{{\bf Proyecto: Etapa 1}\\ Inteligencia Artificial\vspace{10mm}}
+\author{{\bf Profesor:}\\ Simari, Guillermo\\
+{\bf Asistente:}\\ Gomez Lucero, Mauro\\
+{\bf Comisi\'on:}\\ Marcovecchio, Diego. LU: \\ Touceda, Tom\'as. LU: 84024}
+\date{}
+
+\maketitle
+
+\thispagestyle{empty}
+
+\end{titlepage}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Percepciones}
+	\subsection{Turno}
+	
+	Dado que el estado del agente (stamina, oro, fight\_skill) es algo que var\'ia mediante los turnos van pasando, se almacenar\'a el n\'umero de turno actual. De esta forma, se podr\'an diferenciar estrategias que el agente persigue al comienzo del juego, y aquellas que se toman cuando el juego esté m\'as avanzado.
+	
+		\subsubsection{C\'odigo}
+		\begin{lstlisting}
+		test(X,Y):- true.
+		\end{lstlisting}
+
+	\subsection{Mapa}
+	
+	Para cada celda del campo $Vision$, el agente mantendr\'a un ``mapa mental`` con el contenido de este. Para realizar esto, se guardar\'a $mapa(X, Y, Land)$ para todas las celdas por cada nueva percepci\'on. El campo $Land$ corresponde al segundo elemento de la lista $Vision$ que se recibe como parte de la percepci\'on.
+	
+	\subsubsection{C\'odigo}
+	
+	\subsection{Objetos}
+	
+	Los posibles objetos que se pueden encontrar en el recorrido del mapa son posadas, y oro. 
+	
+		\subsubsection{Posadas}
+		
+		Cuando el agente se encuentra una posada, recordar\'a su existencia manteniendo un predicado $posada([[X, Y] | P])$ conteniendo la lista de posadas conocidas, siendo $(X, Y)$ la posici\'on de la posada en $(Fila,Columna)$.
+		
+		\subsubsection{Oro}
+		
+		En caso de encontrar oro, el comportamiento del agente ser\'a el mismo pero en lugar de guardar una lista, se realizar\'an asserts y retracts del predicado $oro(X, Y)$ para el oro visto en la posici\'on $(X, Y)$, pues la posici\'on del oro es din\'amica y muy cambiante, e insertar y/o eliminar sucesivamente elementos de una lista resultar\'ia demasiado para este dato en particular.
+		
+		Si bien el oro que se divise es muy probable que se recoja, estos datos se mantienen para oro que se encuentre en alguna posici\'on a la cual el agente no puede acceder, ya sea por falta de stamina, o por tener algun obstaculo en el camino.
+	
+	\subsubsection{C\'odigo}
+	
+	\subsection{Interacci\'on con otros agentes}
+	
+	En caso de encontrarse con otro agente, este ser\'a recordado en una lista de agentes. Esta lista estar\'a ordenada por prioridad. La prioridad estar\'a dada por la informaci\'on que se infiera del agente, particularmente se trata con mayor prioridad a aquellos agentes que den alg\'un indicio de tener oro, ya que atacar a estos agentes puede resultar no solo en aumentar el fight\_skill, sino tambi\'en en aumentar la cantidad de tesoros. La lista de agentes contendr\'a elementos que estar\'an formados por el nombre del agente y cierta caracterizaci\'on del mismo, por ejemplo, si fue visto atacando a otro implicar\'ia que el agente es agresivo y debe poseer alto fight\_skill. Por otro lado, si el agente fue visto recogiendo oro se aumentar\'a la prioridad del mismo en la lista. 
+	
+	La lista de agentes contendr\'a elementos con la estructura \\
+	$agente(Nombre, VecesVistoAtacando, VecesVistoRecojiendoTesoros)$.
+	
+	Otra cuesti\'on importante es determinar un cierto posicionamiento de los agentes en el mapa. A cada agente se le asignar\'a una zona del mapa, de esta forma, en caso de tener baja stamina o no tener fight\_skill alto, el agente priorizar\'a zonas donde no se hayan visto agentes agresivos. 
+	
+	Para asignar un agente a una zona, como los agentes se mueven a lo largo del mapa, se asumir\'a la pertenencia a una zona circular de 3 de radio. Si un agente est\'a a distancia cuadr\'atica menor a 3 del centro de una zona ya existente, pasar\'a a pertenecer a dicha zona. La existencias de zonas se ver\'a ligada a la asignaci\'on de al menos un agente a ella. Por ello, el mapa de zonas ser\'a din\'amico con respecto al recorrido del agente y su interacci\'on con el entorno.
+	
+	\subsubsection{C\'odigo}
+	
+\end{document}
