@@ -59,7 +59,7 @@ showstringspaces=false}
 		
 		\subsubsection{Oro}
 		
-		En caso de encontrar oro, el comportamiento del agente ser\'a el mismo pero en lugar de guardar una lista, se realizar\'an asserts y retracts del predicado $oro(X, Y)$ para el oro visto en la posici\'on $(X, Y)$, pues la posici\'on del oro es din\'amica y muy cambiante, e insertar y/o eliminar sucesivamente elementos de una lista resultar\'ia demasiado para este dato en particular.
+		En caso de encontrar oro, el comportamiento del agente ser\'a el mismo pero en lugar de guardar una lista, se realizar\'an asserts y retracts del predicado $oro(X, Y, Turno)$ para el oro visto en la posici\'on $(X, Y)$ en el $Turno$ al que se lo vio, pues la posici\'on del oro es din\'amica y muy cambiante, e insertar y/o eliminar sucesivamente elementos de una lista resultar\'ia demasiado para este dato en particular. El turno se guarda junto con la posic\'on del oro, ya que a la hora de realizar una b\'usqueda de caminos minimales hacia oro conocido, se dar\'a prioridad al oro visto de forma m\'as reciente.
 		
 		Si bien el oro que se divise es muy probable que se recoja, estos datos se mantienen para oro que se encuentre en alguna posici\'on a la cual el agente no puede acceder, ya sea por falta de stamina, o por tener algun obstaculo en el camino.
 	
