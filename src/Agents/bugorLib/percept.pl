@@ -82,7 +82,7 @@ remember_agent(Name, [previous_turn_action, attack(_)]):-
 	NewAttack is Attack + 1,
 	write_file(NewA),
 	replace(agentes(_), agentes(NewA)),
-	priority_insert(Name, NewAttack, Picking),
+	insert_agent(Name, NewAttack, Picking),
 	agentes(VerA),
 	write_file('LISTA DESPUES'),
 	write_file(VerA),
@@ -91,7 +91,7 @@ remember_agent(Name, [previous_turn_action, attack(_)]):-
 % Si el predicado member falla, es decir, nunca vimos a este agente:
 remember_agent(Name, [previous_turn_action, attack(_)]):- 
 	write_file('################### B'),nl,nl,
-	priority_insert(Name, 1, 0),
+	insert_agent(Name, 1, 0),
 	write_file('Epa! Y este quien es?').
 
 % Analogamente para los tesoros recojidos
@@ -104,7 +104,7 @@ remember_agent(Name, [previous_turn_action, pickup(_)]):-
 	NewPick is Picking + 1,
 	write_file(NewA),
 	replace(agentes(_), agentes(NewA)),
-	priority_insert(Name, Attack, NewPick),
+	insert_agent(Name, Attack, NewPick),
 	agentes(VerA),
 	write_file('LISTA DESPUES'),
 	write_file(VerA),
@@ -113,13 +113,13 @@ remember_agent(Name, [previous_turn_action, pickup(_)]):-
 % Si el predicado member falla, es decir, nunca vimos a este agente:
 remember_agent(Name, [previous_turn_action, pickup(_)]):- 
 	write_file('################### D'),nl,nl,
-	priority_insert(Name, 0, 1),
+	insert_agent(Name, 0, 1),
 	write_file('Done adding pick'),nl.
 
 % Si el agente no hizo nada
 remember_agent(Name, [previous_turn_action, none]):- 
 	write_file('################### E'),nl,nl,
-	priority_insert(Name, 0, 0).
+	insert_agent(Name, 0, 0).
 
 % Si el agente no hizo nada
 remember_agent(Name, [Attr, Val]):- 
@@ -132,7 +132,7 @@ remember_agent(Name, [Attr, Val]):-
 % Caso especial: 
 %	- Cuando el agente tiene como previous_turn_action= none trata de agregar
 %	al agente con 0,0, por eso se checkea not(member(agente(Name, _, _)
-priority_insert(Name, Attack, Picking):- 
+insert_agent(Name, Attack, Picking):- 
 	agentes(A), 
 	not(member(agente(Name, _, _), A)), 
 	replace(agentes(_), 
@@ -140,7 +140,7 @@ priority_insert(Name, Attack, Picking):-
 
 % Caso especial que el agente ya este insertado, no se hace nada.
 % Es decir, el not(memeber()) falla
-priority_insert(Name, Attack, Picking).
+insert_agent(Name, Attack, Picking).
 
 % Dado un agente y una posicion se analiza si agregarlo a una zona existente o
 % crear una zona nueva
