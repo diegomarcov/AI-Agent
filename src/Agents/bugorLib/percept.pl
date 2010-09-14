@@ -2,14 +2,18 @@
 
 update_state([Turn, Vision, Attr, Inventory]):- save_turn(Turn), 
 												save_map(Vision).
+% TODO: 
+%	- Ver que se guarde bien el mapa
+
 
 % Mapa %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Recorre todos los elementos a la vista
 % y los analiza por separado
 save_map(Vision):- 
-	objects_at_sight(Vision, ObjectsAtSight),
-	forall(member([Pos, Obj], ObjectsAtSight), (analize_things([Pos, Obj]))), write_file('Done with forall'), nl.
+	forall(member([[X, Y], Land, Objects], Vision), assert_once(map(X, Y, Land))), % Guardamos el mapa
+	objects_at_sight(Vision, ObjectsAtSight), % Recolectamos los objetos que vemos
+	forall(member([Pos, Obj], ObjectsAtSight), (analize_things([Pos, Obj]))), write_file('Done with forall'), nl. % Se los analiza uno a uno
 
 % Analiza un elemento visto
 % Si es oro o posada, recuerdo
