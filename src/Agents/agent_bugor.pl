@@ -29,9 +29,9 @@ run:-
 	  ag_name(AgName),
       %display_ag(AgName, Perc), nl,
       % agregado esto para que el agente actue en modo joystick
-%       write_file('ACCION?: '), read(Action),
-%       do_action(Action),
-	  do_action(none),
+	  write_file('ACCION?: '), read(Action),
+	  do_action(Action),
+%       do_action(none),
       run.
       
 decide_action(attack(Victim)).

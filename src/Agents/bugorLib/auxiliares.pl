@@ -33,15 +33,7 @@ write_file(T):-
 	nl(Stream),
 	close(Stream).
 
-debug(title, Text):-
-	open('debug.txt', append, Stream),
-	write(Stream, '########'),
-	write(Stream, Text),
-	write(Stream, '########'),
-	nl(Stream),
-	close(Stream).
-
-debug(Header, Text):-
+debug_lowlevel(Header, Text):-
 	open('debug.txt', append, Stream),
 	write(Stream, Header),
 	write(Stream, ': '),
@@ -49,13 +41,17 @@ debug(Header, Text):-
 	nl(Stream),
 	close(Stream).
 
+debug(title, Text):-
+	concat(Text, '########', C),
+	debug_lowlevel('########', C).
+
 debug(info, Text):-
-	debug('*INFO*', Text).
+	debug_lowlevel('*INFO*', Text).
 
 debug(error, Text):-
-	debug('!!ERROR!!', Text).
+	debug_lowlevel('!!ERROR!!', Text).
 
 debug(warning, Text):-
-	debug('$WARNING$', Text).
+	debug_lowlevel('$WARNING$', Text).
 
 init_debug:- write_file('************************************************************').

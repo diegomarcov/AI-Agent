@@ -1,7 +1,8 @@
 % Percept %%%%%%%%%%%%%%%%%%%%%%%%
 
-update_state([Turn, Vision, Attr, Inventory]):- save_turn(Turn), 
-												save_map(Vision).
+update_state([Turn, Vision, Attr, Inventory]):- 
+	save_turn(Turn), 
+	save_map(Vision).
 % TODO: 
 %	- Ver que se guarde bien el mapa
 
@@ -12,6 +13,7 @@ update_state([Turn, Vision, Attr, Inventory]):- save_turn(Turn),
 % y los analiza por separado
 save_map(Vision):- 
 	forall(member([[X, Y], Land, Objects], Vision), assert_once(map(X, Y, Land))), % Guardamos el mapa
+	debug(info, map(X, Y, Land)),
 	objects_at_sight(Vision, ObjectsAtSight), % Recolectamos los objetos que vemos
 	forall(member([Pos, Obj], ObjectsAtSight), (analize_things([Pos, Obj]))), write_file('Done with forall'), nl. % Se los analiza uno a uno
 
