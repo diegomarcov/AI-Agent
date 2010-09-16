@@ -54,4 +54,14 @@ debug(error, Text):-
 debug(warning, Text):-
 	debug_lowlevel('$WARNING$', Text).
 
-init_debug:- write_file('************************************************************').
+debug_term(Header, Text, Term):-
+	term_to_atom(Term, X),
+	concat(Text, X, Str),
+	debug(Header, Str).
+
+time_stamp(Today):- get_time(X), format_time(atom(Today), '%H:%M - %d/%m/%Y', X).
+
+init_debug:- 
+	time_stamp(T),
+	concat('*** Starting debug @ ', T, Str),
+	write_file(Str).
