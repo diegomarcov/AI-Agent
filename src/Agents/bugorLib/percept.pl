@@ -160,6 +160,14 @@ insert_agent(Name, Attack, Picking, Slow):-
 insert_agent(Name, Attack, Picking, Slow).
 
 % TODO: Hacer predicado de feasibilidad de ataque de agente
+agent_priority(agente(Name, Attack, Pick, false), Priority):-
+	Total is Pick + Attack,
+	Priority is Pick * 100 / Total.
+
+agent_priority(agente(Name, Attack, Pick, true), Priority):-
+	Total is Pick + Attack,
+	Temp is Pick * 100 / Total,
+	Priority is Temp * 2.
 
 % Guardo el numero de turno actual
 save_turn(Turn):- 
