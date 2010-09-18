@@ -33,16 +33,16 @@ showstringspaces=false}
 
 \newpage
 
-\section{Aclaraciones previas}
+\section{Consideraciones previas}
 
-	Con $(...)$ en las secci\'on de c\'odigo se simboliza que el mismo es un estracto del predicado completo. Esto sucede porque en el predicado tal vez se resuelva m\'as de una cosa a la vez, por lo que no todo el c\'odigo tendr\'a que ver con la secci\'on que lo refiere.
+	Con $(...)$ en las secci\'on de c\'odigo se simboliza que \'este es un extracto del predicado completo. Esto ocurre porque en el predicado posiblemente se resuelva m\'as de un problema a la vez, por lo que no todo el c\'odigo tendr\'a que ver con la secci\'on que lo refiere.
 	
-	En cuanto a la modularizaci\'on, $agent\_bugor.pl$ es el archivo principal del agente, en donde se definen los predicados principales (run, start\_ag, etc), en el directorio $bugorLib$ se encuentran dos archivos, $auxiliares.pl$ en donde se implementan predicados de debugging, y operaciones que no est\'an relacionada de forma directa ni con el comportamiento ni con la percepci\'on, y en $percept.pl$ se encuentra la implementaci\'on del predicado update\_state, asi como todos los predicados que se desprenden de \'el.
+	En cuanto a la modularizaci\'on, $agent\_bugor.pl$ es el archivo principal del agente, en donde se definen los predicados principales (run, start\_ag, etc), y en el directorio $bugorLib$ se encuentran dos archivos: $auxiliares.pl$, en donde se implementan predicados de debugging, y operaciones que no est\'an relacionadas de forma directa ni con el comportamiento ni con la percepci\'on, y en $percept.pl$ se encuentra la implementaci\'on del predicado update\_state, as\'i como todos los predicados que se desprenden de \'el.
 
 \section{Percepciones}
 	\subsection{Turno}
 	
-	Dado que el estado del agente (stamina, oro, fight\_skill) es algo que var\'ia mediante los turnos van pasando, se almacenar\'a el n\'umero de turno actual. De esta forma, se podr\'an diferenciar estrategias que el agente persigue al comienzo del juego, y aquellas que se toman cuando el juego esté m\'as avanzado.
+	Dado que el estado del agente (stamina, oro, fight\_skill) es una propiedad que var\'ia a medida que los turnos van pasando, se almacenar\'a el n\'umero de turno actual. De esta forma, se podr\'an diferenciar estrategias que el agente persigue al comienzo del juego, de aquellas decisiones que se toman cuando el juego est\'e m\'as avanzado.
 	
 		\subsubsection{C\'odigo}
 		\begin{lstlisting}
@@ -53,7 +53,7 @@ save_turn(Turn):-
 
 	\subsection{Mapa}
 	
-	Para cada celda del campo $Vision$, el agente mantendr\'a un ``mapa mental`` con el contenido de este. Para realizar esto, se guardar\'a $mapa(X, Y, Land)$ para todas las celdas por cada nueva percepci\'on. El campo $Land$ corresponde al segundo elemento de la lista $Vision$ que se recibe como parte de la percepci\'on.
+	Para cada celda del campo $Vision$, el agente mantendr\'a un ``mapa mental'' con el contenido de \'este. Para realizar esto, se guardar\'a $mapa(X, Y, Land)$ para todas las celdas por cada nueva percepci\'on. El campo $Land$ corresponde al segundo elemento de la lista $Vision$ que se recibe como parte de la percepci\'on.
 	
 		\subsubsection{C\'odigo}
 		\begin{lstlisting}
@@ -69,13 +69,13 @@ save_map(Vision):-
 	
 		\subsubsection{Posadas}
 		
-		Cuando el agente se encuentra una posada, recordar\'a su existencia manteniendo un predicado $posada([[X, Y] | P])$ conteniendo la lista de posadas conocidas, siendo $(X, Y)$ la posici\'on de la posada en $(Fila,Columna)$.
+		Cuando el agente encuentra una posada, recordar\'a su existencia manteniendo un predicado $posada([[X, Y] | P])$ conteniendo la lista de posadas conocidas, siendo $(X, Y)$ la posici\'on de la posada en $(Fila,Columna)$.
 		
 		\subsubsection{Oro}
 		
-		En caso de encontrar oro, el comportamiento del agente ser\'a el mismo pero en lugar de guardar una lista, se realizar\'an asserts y retracts del predicado $oro(X, Y, Turno)$ para el oro visto en la posici\'on $(X, Y)$ en el $Turno$ al que se lo vio, pues la posici\'on del oro es din\'amica y muy cambiante, e insertar y/o eliminar sucesivamente elementos de una lista resultar\'ia demasiado para este dato en particular. El turno se guarda junto con la posic\'on del oro, ya que a la hora de realizar una b\'usqueda de caminos minimales hacia oro conocido, se dar\'a prioridad al oro visto de forma m\'as reciente.
+		En caso de encontrar oro, el comportamiento del agente ser\'a el mismo pero en lugar de guardar una lista, se realizar\'an asserts y retracts del predicado $oro(X, Y, Turno)$ para el oro visto en la posici\'on $(X, Y)$ en el $Turno$ al que se lo vio, pues la posici\'on del oro es din\'amica y muy cambiante, e insertar y/o eliminar sucesivamente elementos de una lista resultar\'ia demasiado para este dato en particular. El turno se guarda junto con la posici\'on del oro, ya que a la hora de realizar una b\'usqueda de caminos minimales hacia oro conocido, se dar\'a prioridad al oro visto de forma m\'as reciente.
 		
-		Si bien el oro que se divise es muy probable que se recoja, estos datos se mantienen para oro que se encuentre en alguna posici\'on a la cual el agente no puede acceder, ya sea por falta de stamina, o por tener algun obstaculo en el camino.
+		Si bien el oro que se divise es muy probable que se recoja, estos datos se mantienen para oro que se encuentre en alguna posici\'on a la cual el agente no puede acceder, ya sea por falta de stamina, o por tener alg\'un obstaculo en el camino.
 		
 		\subsubsection{C\'odigo}
 		
@@ -106,11 +106,11 @@ analize_things([Pos, Obj]):-
 	
 	\subsection{Interacci\'on con otros agentes}
 	
-	En caso de encontrarse con otro agente, este ser\'a recordado en una lista de agentes. En caso de encontrarse con m\'as de un agente conocido, se establece una prioridad que ser\'a usada a la hora de tomar una decisi\'on acerca de qu\'e hacer luego. La prioridad estar\'a dada por la informaci\'on que se infiera de cada agente, particularmente se trata con mayor prioridad a aquellos agentes que den alg\'un indicio de tener oro, ya que atacar a estos agentes puede resultar no solo en aumentar el fight\_skill, sino tambi\'en en aumentar la cantidad de tesoros en caso de dejarlo inconsciente.
+	En caso de encontrarse con otro agente, \'este ser\'a recordado en una lista de agentes. En caso de encontrarse con m\'as de un agente conocido, se establece una prioridad que ser\'a utilizada a la hora de decidir c\'omo actuar. La prioridad estar\'a dada por la informaci\'on que se infiera de cada agente; en particular, se trata con mayor prioridad a aquellos agentes que den alg\'un indicio de tener oro, ya que atacar a estos agentes puede resultar no solo en aumentar el fight\_skill, sino tambi\'en en aumentar la cantidad de tesoros en caso de dejarlo inconsciente.
 	
-	La lista de agentes contendr\'a elementos que estar\'an formados por el nombre del agente y cierta caracterizaci\'on del mismo, por ejemplo, si fue visto atacando a otro implicar\'ia que el agente es agresivo y debe poseer alto fight\_skill. Por otro lado, si el agente fue visto recogiendo oro se aumentar\'a la prioridad del mismo en la lista. 
+	La lista de agentes contendr\'a elementos que estar\'an formados por el nombre del agente y cierta caracterizaci\'on de \'este; por ejemplo, si fue visto atacando a otro implicar\'ia que el agente es agresivo y puede poseer alto fight\_skill. Por otro lado, si el agente fue visto recogiendo oro se aumentar\'a la prioridad de \'este en la lista. 
 	
-	Un caso especial de agente es aquel al que se lo vi\'o sin hacer nada (previous\_turn\_action = none), a estos los llamamos ``lentos''. Puede que alg\'un agente piense demasiado y pierda un turno, lo cual nos dar\'a ventaja a la hora de atacarlo.
+	Se considera, adem\'as, un caso especial para aquellos agentes que fueron vistos inm\'oviles, (previous\_turn\_action = none), a quienes denominamos ``lentos''. Puede que alg\'un agente piense demasiado y pierda un turno, lo cual puede significar cierta ventaja a la hora de atacarlo.
 	
 	La lista de agentes contendr\'a elementos con la estructura \\
 	$agente(Nombre, VecesVistoAtacando, VecesVistoRecojiendoTesoros, EsLento)$.
