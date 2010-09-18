@@ -33,6 +33,12 @@ showstringspaces=false}
 
 \newpage
 
+\section{Aclaraciones previas}
+
+	Con $(...)$ en las secci\'on de c\'odigo se simboliza que el mismo es un estracto del predicado completo. Esto sucede porque en el predicado tal vez se resuelva m\'as de una cosa a la vez, por lo que no todo el c\'odigo tendr\'a que ver con la secci\'on que lo refiere.
+	
+	En cuanto a la modularizaci\'on, $agent\_bugor.pl$ es el archivo principal del agente, en donde se definen los predicados principales (run, start\_ag, etc), en el directorio $bugorLib$ se encuentran dos archivos, $auxiliares.pl$ en donde se implementan predicados de debugging, y operaciones que no est\'an relacionada de forma directa ni con el comportamiento ni con la percepci\'on, y en $percept.pl$ se encuentra la implementaci\'on del predicado update\_state, asi como todos los predicados que se desprenden de \'el.
+
 \section{Percepciones}
 	\subsection{Turno}
 	
@@ -40,14 +46,22 @@ showstringspaces=false}
 	
 		\subsubsection{C\'odigo}
 		\begin{lstlisting}
-		test(X,Y):- true.
+save_turn(Turn):- 
+	retract(turn(_)), 
+	assert(turn(Turn)).
 		\end{lstlisting}
 
 	\subsection{Mapa}
 	
 	Para cada celda del campo $Vision$, el agente mantendr\'a un ``mapa mental`` con el contenido de este. Para realizar esto, se guardar\'a $mapa(X, Y, Land)$ para todas las celdas por cada nueva percepci\'on. El campo $Land$ corresponde al segundo elemento de la lista $Vision$ que se recibe como parte de la percepci\'on.
 	
-	\subsubsection{C\'odigo}
+		\subsubsection{C\'odigo}
+		\begin{lstlisting}
+save_map(Vision):- 
+	forall(member([[X, Y], Land, Objects], Vision), 
+		assert_once(map(X, Y, Land))), 
+	(...)
+		\end{lstlisting}
 	
 	\subsection{Objetos}
 	
@@ -62,20 +76,145 @@ showstringspaces=false}
 		En caso de encontrar oro, el comportamiento del agente ser\'a el mismo pero en lugar de guardar una lista, se realizar\'an asserts y retracts del predicado $oro(X, Y, Turno)$ para el oro visto en la posici\'on $(X, Y)$ en el $Turno$ al que se lo vio, pues la posici\'on del oro es din\'amica y muy cambiante, e insertar y/o eliminar sucesivamente elementos de una lista resultar\'ia demasiado para este dato en particular. El turno se guarda junto con la posic\'on del oro, ya que a la hora de realizar una b\'usqueda de caminos minimales hacia oro conocido, se dar\'a prioridad al oro visto de forma m\'as reciente.
 		
 		Si bien el oro que se divise es muy probable que se recoja, estos datos se mantienen para oro que se encuentre en alguna posici\'on a la cual el agente no puede acceder, ya sea por falta de stamina, o por tener algun obstaculo en el camino.
-	
-	\subsubsection{C\'odigo}
+		
+		\subsubsection{C\'odigo}
+		
+		\begin{lstlisting}
+analize_things([Pos, Obj]):- 
+	(...)
+	Obj = [hostel, Name, Attrs],
+	posadas(P),
+	member(Pos, P),
+	(...)
+
+analize_things([Pos, Obj]):- 
+	(...)
+	Obj = [hostel, Name, Attrs],
+	posadas(P),
+	% Agrego la posada a la lista
+	replace(posadas(_), posadas([Pos | P])),
+	(...)
+
+analize_things([Pos, Obj]):- 
+	(...)
+	Obj = [treasure, Name, Attrs],
+	% Agrego el tesoro
+	turn(T), % Se guarda el turno en el que se vio
+	assert_once_oro(Pos, T),
+	(...)
+		\end{lstlisting}
 	
 	\subsection{Interacci\'on con otros agentes}
 	
-	En caso de encontrarse con otro agente, este ser\'a recordado en una lista de agentes. Esta lista estar\'a ordenada por prioridad. La prioridad estar\'a dada por la informaci\'on que se infiera del agente, particularmente se trata con mayor prioridad a aquellos agentes que den alg\'un indicio de tener oro, ya que atacar a estos agentes puede resultar no solo en aumentar el fight\_skill, sino tambi\'en en aumentar la cantidad de tesoros. La lista de agentes contendr\'a elementos que estar\'an formados por el nombre del agente y cierta caracterizaci\'on del mismo, por ejemplo, si fue visto atacando a otro implicar\'ia que el agente es agresivo y debe poseer alto fight\_skill. Por otro lado, si el agente fue visto recogiendo oro se aumentar\'a la prioridad del mismo en la lista. 
+	En caso de encontrarse con otro agente, este ser\'a recordado en una lista de agentes. En caso de encontrarse con m\'as de un agente conocido, se establece una prioridad que ser\'a usada a la hora de tomar una decisi\'on acerca de qu\'e hacer luego. La prioridad estar\'a dada por la informaci\'on que se infiera de cada agente, particularmente se trata con mayor prioridad a aquellos agentes que den alg\'un indicio de tener oro, ya que atacar a estos agentes puede resultar no solo en aumentar el fight\_skill, sino tambi\'en en aumentar la cantidad de tesoros en caso de dejarlo inconsciente.
+	
+	La lista de agentes contendr\'a elementos que estar\'an formados por el nombre del agente y cierta caracterizaci\'on del mismo, por ejemplo, si fue visto atacando a otro implicar\'ia que el agente es agresivo y debe poseer alto fight\_skill. Por otro lado, si el agente fue visto recogiendo oro se aumentar\'a la prioridad del mismo en la lista. 
+	
+	Un caso especial de agente es aquel al que se lo vi\'o sin hacer nada (previous\_turn\_action = none), a estos los llamamos ``lentos''. Puede que alg\'un agente piense demasiado y pierda un turno, lo cual nos dar\'a ventaja a la hora de atacarlo.
 	
 	La lista de agentes contendr\'a elementos con la estructura \\
-	$agente(Nombre, VecesVistoAtacando, VecesVistoRecojiendoTesoros)$.
+	$agente(Nombre, VecesVistoAtacando, VecesVistoRecojiendoTesoros, EsLento)$.
 	
-	Otra cuesti\'on importante es determinar un cierto posicionamiento de los agentes en el mapa. A cada agente se le asignar\'a una zona del mapa, de esta forma, en caso de tener baja stamina o no tener fight\_skill alto, el agente priorizar\'a zonas donde no se hayan visto agentes agresivos. 
-	
-	Para asignar un agente a una zona, como los agentes se mueven a lo largo del mapa, se asumir\'a la pertenencia a una zona circular de 3 de radio. Si un agente est\'a a distancia Eucl\'idea menor a 3 del centro de una zona ya existente, pasar\'a a pertenecer a dicha zona. La existencias de zonas se ver\'a ligada a la asignaci\'on de al menos un agente a ella. Por ello, el mapa de zonas ser\'a din\'amico con respecto al recorrido del agente y su interacci\'on con el entorno.
+% 	Otra cuesti\'on importante es determinar un cierto posicionamiento de los agentes en el mapa. A cada agente se le asignar\'a una zona del mapa, de esta forma, en caso de tener baja stamina o no tener fight\_skill alto, el agente priorizar\'a zonas donde no se hayan visto agentes agresivos. 
+% 	
+% 	Para asignar un agente a una zona, como los agentes se mueven a lo largo del mapa, se asumir\'a la pertenencia a una zona circular de 3 de radio. Si un agente est\'a a distancia Eucl\'idea menor a 3 del centro de una zona ya existente, pasar\'a a pertenecer a dicha zona. La existencias de zonas se ver\'a ligada a la asignaci\'on de al menos un agente a ella. Por ello, el mapa de zonas ser\'a din\'amico con respecto al recorrido del agente y su interacci\'on con el entorno.
 	
 	\subsubsection{C\'odigo}
+	
+	\begin{lstlisting}
+analize_things([Pos, Obj]):- 
+	(...)
+	Obj = [agent, Name, Attrs],
+	Name \= bugor, % Descartamos analizar este mismo agente
+	% Para todos los agentes: se lo recuerda
+	forall(member([AttrName, Value], Attrs), 
+		remember_agent(Name, [AttrName, Value])).
+
+% este caso es cuando bugor se ve a si mismo; simplemente se ignora
+analize_things([Pos, Obj]):- 
+	Obj = [agent, bugor, Attrs],
+	(...)
+
+remember_agent(Name, [previous_turn_action, attack(_)]):- 
+	(...)
+	agentes(A),
+	(...)
+	member(agente(Name, Attack, Picking, Slow), A),
+	(...)
+	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA),
+	NewAttack is Attack + 1,
+	replace(agentes(_), agentes(NewA)),
+	insert_agent(Name, NewAttack, Picking, Slow),
+	(...)
+
+% Si el predicado member falla, es decir, nunca vimos a este agente:
+remember_agent(Name, [previous_turn_action, attack(_)]):- 
+	(...)
+	agentes(A),
+	(...)
+	insert_agent(Name, 1, 0),
+	(...)
+
+% Analogamente para los tesoros recojidos
+remember_agent(Name, [previous_turn_action, pickup(_)]):- 
+	(...)
+	agentes(A),
+	(...)
+	member(agente(Name, Attack, Picking, Slow), A),
+	(...)
+	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA),
+	NewPick is Picking + 1,
+	replace(agentes(_), agentes(NewA)),
+	insert_agent(Name, Attack, NewPick, Slow),
+	(...)
+
+% Si el predicado member falla, es decir, nunca vimos a este agente:
+remember_agent(Name, [previous_turn_action, pickup(_)]):- 
+	(...)
+	insert_agent(Name, 0, 1, false),
+	(...)
+
+% Si el agente no hizo nada y ya lo conocemos
+remember_agent(Name, [previous_turn_action, none]):- 
+	(...)
+	agentes(A),
+	(...)
+	member(agente(Name, Attack, Picking, Slow), A),
+	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA),
+	replace(agentes(_), agentes(NewA)),
+	insert_agent(Name, Attack, Picking, true),
+	(...)
+
+% Si el agente no hizo nada y no lo conocimos
+remember_agent(Name, [previous_turn_action, none]):- 
+	(...)
+	insert_agent(Name, 0, 0, true),
+	(...)
+
+% Si el agente no hizo nada
+remember_agent(Name, [Attr, Val]):- 
+	debug(warning, 'remember_agent: Case G: What the hell is this?'),
+	term_to_atom(Attr, A),
+	term_to_atom(Val, V),
+	concat(A, ' = ', Str),
+	concat(Str, V, Str2),
+	debug(warning, Str2).
+
+% Inserta a un agente en la lista
+% Caso especial: 
+%	- Cuando el agente tiene como previous_turn_action = none 
+%     trata de agregar al agente con 0,0, por eso se checkea 
+%     not(member(agente(Name, _, _)
+insert_agent(Name, Attack, Picking, Slow):- 
+	agentes(A), 
+	not(member(agente(Name, _, _, _), A)), 
+	replace(agentes(_), 
+	agentes([agente(Name, Attack, Picking, Slow) | A])).
+
+% Caso especial que el agente ya este insertado, no se hace nada.
+% Es decir, el not(memeber()) falla
+insert_agent(Name, Attack, Picking, Slow).
+	\end{lstlisting}
+
 	
 \end{document}

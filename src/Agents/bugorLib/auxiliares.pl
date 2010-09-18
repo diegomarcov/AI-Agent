@@ -15,7 +15,8 @@ replace(X, Y):-
 % Utilizado para "recordar" cosas solo una
 % vez
 assert_once(X):- 
-	concat('Asserting ', X, Str),
+	term_to_atom(X, NX),
+	concat('Asserting ', NX, Str),
 	debug(info, Str),
 	replace(X, X).
 
