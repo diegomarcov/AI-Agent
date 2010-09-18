@@ -8,7 +8,7 @@ replace(X, Y):-
 
 % Caso especial en que el retractall falla 
 % porque no existe el conocimiento X
-replace(X, Y):- 
+replace(_X, Y):- 
 	debug(warning, 'Retract failed! Asserting only'),
 	assert(Y).
 

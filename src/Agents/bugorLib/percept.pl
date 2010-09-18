@@ -1,6 +1,9 @@
+You don't have permission to modify files in this network location. Contact the administrator per permission to make these changes.
+
+
 % Percept %%%%%%%%%%%%%%%%%%%%%%%%
 
-update_state([Turn, Vision, Attr, Inventory]):- 
+update_state([Turn, Vision, _Attr, _Inventory]):- 
 	save_turn(Turn), 
 	save_map(Vision).
 % TODO: 
@@ -12,7 +15,7 @@ update_state([Turn, Vision, Attr, Inventory]):-
 % Recorre todos los elementos a la vista
 % y los analiza por separado
 save_map(Vision):- 
-	forall(member([[X, Y], Land, Objects], Vision), assert_once(map(X, Y, Land))), % Guardamos el mapa
+	forall(member([[X, Y], Land, _Objects], Vision), assert_once(map(X, Y, Land))), % Guardamos el mapa
 	findall([X, Y, Land], map(X, Y, Land), Mapa),
 	term_to_atom(Mapa, M),
 	debug_term(info, 'Known Map: ', M),
@@ -27,7 +30,7 @@ save_map(Vision):-
 % este es el caso en el que pasa por un hotel que ya conoce
 analize_things([Pos, Obj]):- 
 	debug_term(info, 'Currently analizing this: ', Obj),
-	Obj = [hostel, Name, Attrs],
+	Obj = [hostel, _Name, _Attrs],
 	posadas(P),
 	member(Pos, P),
 	debug_term(info, 'Already known. Known hostels: ', P).
@@ -35,7 +38,7 @@ analize_things([Pos, Obj]):-
 % en este caso, el agente ve un hotel nuevo
 analize_things([Pos, Obj]):- 
 	debug_term(info, 'Currently analizing this: ', Obj),
-	Obj = [hostel, Name, Attrs],
+	Obj = [hostel, _Name, _Attrs],
 	posadas(P),
 	% Agrego la posada a la lista
 	replace(posadas(_), posadas([Pos | P])),
@@ -45,11 +48,11 @@ analize_things([Pos, Obj]):-
 % pero parece ser siempre 100.
 analize_things([Pos, Obj]):- 
 	debug_term(info, 'Currently analizing this: ', Obj),
-	Obj = [treasure, Name, Attrs],
+	Obj = [treasure, _Name, _Attrs],
 	% Agrego el tesoro
 	turn(T), % Se guarda el turno en el que se vio
 	assert_once_oro(Pos, T),
-	findall(X, oro(X, Y), O),
+	findall(X, oro(X, _Y), O),
 	debug_term(info, 'Known treasures: ', O).
 
 % NOTAS: 
@@ -57,7 +60,7 @@ analize_things([Pos, Obj]):-
 %    - previous_turn_action = {none, attack(name), turn(orientation), pickup(objname), move_fwd}
 %    - unconcious = {true, false}
 %    - dir = {n, s, w, e}
-analize_things([Pos, Obj]):- 
+analize_things([_Pos, Obj]):- 
 	debug_term(info, 'Currently analizing this: ', Obj),
 	Obj = [agent, Name, Attrs],
 	Name \= bugor, % Descartamos analizar este mismo agente
@@ -65,8 +68,8 @@ analize_things([Pos, Obj]):-
 	forall(member([AttrName, Value], Attrs), remember_agent(Name, [AttrName, Value])).
 
 % este caso es cuando bugor se ve a si mismo; simplemente se ignora
-analize_things([Pos, Obj]):- 
-	Obj = [agent, bugor, Attrs],
+analize_things([_Pos, Obj]):- 
+	Obj = [agent, bugor, _Attrs],
 	debug(warning,'HELLO! IT´S-A ME, BUUUUGOOOOR!').
 
 % Predicado para filtrar atributos de agente
@@ -137,7 +140,7 @@ remember_agent(Name, [previous_turn_action, none]):-
 	debug_term(info, 'Updated agent list: ', VerA).
 
 % Si el agente no hizo nada
-remember_agent(Name, [Attr, Val]):- 
+remember_agent(_Name, [Attr, Val]):- 
 	debug(warning, 'remember_agent: Case G: What the hell is this?'),
 	term_to_atom(Attr, A),
 	term_to_atom(Val, V),
@@ -157,14 +160,14 @@ insert_agent(Name, Attack, Picking, Slow):-
 
 % Caso especial que el agente ya este insertado, no se hace nada.
 % Es decir, el not(memeber()) falla
-insert_agent(Name, Attack, Picking, Slow).
+insert_agent(_Name, _Attack, _Picking, _Slow).
 
 % TODO: Hacer predicado de feasibilidad de ataque de agente
-agent_priority(agente(Name, Attack, Pick, false), Priority):-
+agent_priority(agente(_Name, Attack, Pick, false), Priority):-
 	Total is Pick + Attack,
 	Priority is Pick * 100 / Total.
 
-agent_priority(agente(Name, Attack, Pick, true), Priority):-
+agent_priority(agente(_Name, Attack, Pick, true), Priority):-
 	Total is Pick + Attack,
 	Temp is Pick * 100 / Total,
 	Priority is Temp * 2.

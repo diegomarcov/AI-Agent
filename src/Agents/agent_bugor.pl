@@ -26,15 +26,15 @@ run:-
       get_percept(Perc),
       update_state(Perc),
       % decide_action(Action),
-	  ag_name(AgName),
-      %display_ag(AgName, Perc), nl,
+	  % ag_name(AgName),
+      % display_ag(AgName, Perc), nl,
       % agregado esto para que el agente actue en modo joystick
 	  write('ACCION?: '), read(Action),
 	  do_action(Action),
 %       do_action(none),
       run.
       
-decide_action(attack(Victim)).
+decide_action(attack(_Victim)).
       
 start_ag:- 
 	init_debug,
