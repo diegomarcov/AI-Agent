@@ -1,6 +1,3 @@
-You don't have permission to modify files in this network location. Contact the administrator per permission to make these changes.
-
-
 % Percept %%%%%%%%%%%%%%%%%%%%%%%%
 
 update_state([Turn, Vision, _Attr, _Inventory]):- 
@@ -9,13 +6,21 @@ update_state([Turn, Vision, _Attr, _Inventory]):-
 % TODO: 
 %	- Ver que se guarde bien el mapa
 
+processPosition(X, Y, Land, Objects):-
+	write('NKLA PUTA AMDRE'), nl,
+	assert_once(map(X, Y, Land)),  % Guardamos el mapa
+	oro(X,Y),
+	not (member([treasure,_,_], Objects)),
+	retract(oro(X,Y)).
+%	write('Current objects at position: '), write(X), write(','), write(Y), nl, nl, write(Objects), nl, nl.
 
 % Mapa %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Recorre todos los elementos a la vista
 % y los analiza por separado
 save_map(Vision):- 
-	forall(member([[X, Y], Land, _Objects], Vision), assert_once(map(X, Y, Land))), % Guardamos el mapa
+	write('CRISTO'), nl,
+	forall(member([[X, Y], Land, Objects], Vision), processPosition(X,Y,Land,Objects)), % En este predicado guardamos el mapa y borramos el oro recordado en caso de que ya no este
 	findall([X, Y, Land], map(X, Y, Land), Mapa),
 	term_to_atom(Mapa, M),
 	debug_term(info, 'Known Map: ', M),
