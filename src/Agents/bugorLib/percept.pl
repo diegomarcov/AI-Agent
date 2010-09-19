@@ -6,19 +6,23 @@ update_state([Turn, Vision, _Attr, _Inventory]):-
 % TODO:
 %	- Ver que se guarde bien el mapa
 
+% primer caso: recuerdo que habia oro, y sigue estando
 processPosition(X, Y, Land, Objects):-
-%	write('Estoy en el primer caso para la posicion '), write(X), write(','), write(Y), nl, nl,
 	assert_once(map(X, Y, Land)),  % Guardamos el mapa
-	oro(X,Y),
-	not (member([treasure,_,_], Objects)),
-	retract(oro(X,Y)).
-%	write('Current objects at position: '), write(X), write(','), write(Y),
-%       nl, nl, write(Objects), nl, nl.
+	oro([X,Y],_),
+	member([treasure,_name,_data], Objects).
+	
+% segundo caso: recuerdo que habia oro, pero alguien lo levanto!
+processPosition(X, Y, Land, Objects):-
+	assert_once(map(X, Y, Land)),  % Guardamos el mapa
+	oro([X,Y],_),
+	retract(oro([X,Y],_)).
 
+% tercer caso: no recuerdo que haya habido oro anteriormente.
 % si falla, es o bien porque no habia oro en esa posicion, o porque el oro esta y ya era recordado,
 % asi que unicamente guardo el mapa.
 processPosition(X, Y, Land, Objects):-
-%	write('Estoy en el segundo caso para la posicion '), write(X), write(','), write(Y), nl, nl,
+	% write('Estoy en el segundo caso para la posicion '), write(X), write(','), write(Y), nl, nl,
 	assert_once(map(X, Y, Land)).  % Guardamos el mapa
 	
 	
@@ -27,7 +31,6 @@ processPosition(X, Y, Land, Objects):-
 % Recorre todos los elementos a la vista
 % y los analiza por separado
 save_map(Vision):-
-	write('CRISTO'), nl,
 	forall(member([[X, Y], Land, Objects], Vision), processPosition(X, Y, Land, Objects)), % Guardo el mapa y borro el oro
 	findall([X, Y, Land], map(X, Y, Land), Mapa),
 	term_to_atom(Mapa, M),
