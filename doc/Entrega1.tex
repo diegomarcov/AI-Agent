@@ -53,14 +53,32 @@ save_turn(Turn):-
 
 	\subsection{Mapa}
 	
-	Para cada celda del campo $Vision$, el agente mantendr\'a un ``mapa mental'' con el contenido de \'este. Para realizar esto, se guardar\'a $mapa(X, Y, Land)$ para todas las celdas por cada nueva percepci\'on. El campo $Land$ corresponde al segundo elemento de la lista $Vision$ que se recibe como parte de la percepci\'on.
+	Para cada celda del campo $Vision$, el agente mantendr\'a un ``mapa mental'' con el contenido de \'este. Para realizar esto, se guardar\'a $mapa(X, Y, Land)$ para todas las celdas por cada nueva percepci\'on. El campo $Land$ corresponde al segundo elemento de la lista $Vision$ que se recibe como parte de la percepci\'on. Adicionalmente, se realiza un checkeo para comprobar si anteriormente hab\'ia oro en esa posici\'oin; si ese es el caso, pero el oro ya no se encuentra, se elimina el agente deja de recordarlo.
 	
 		\subsubsection{C\'odigo}
 		\begin{lstlisting}
 save_map(Vision):- 
-	forall(member([[X, Y], Land, Objects], Vision), 
-		assert_once(map(X, Y, Land))), 
+	forall(member([[X, Y], Land, Objects], Vision),
+		processPosition(X, Y, Land, Objects)), 
 	(...)
+
+% primer caso: el agente recuerda que habia oro, y sigue estando
+processPosition(X, Y, Land, Objects):-
+	assert_once(map(X, Y, Land)),  % Guardamos el mapa
+	oro([X,Y],_),
+	member([treasure,_name,_data], Objects).
+	
+% segundo caso: el agente recuerda que habia oro,
+% pero alguien lo levanto!
+processPosition(X, Y, Land, Objects):-
+	assert_once(map(X, Y, Land)),  % Guardamos el mapa
+	oro([X,Y],_),
+	retract(oro([X,Y],_)).
+
+% tercer caso: no habia oro anteriormente.
+processPosition(X, Y, Land, Objects):-
+	assert_once(map(X, Y, Land)).  % Guardamos el mapa
+
 		\end{lstlisting}
 	
 	\subsection{Objetos}

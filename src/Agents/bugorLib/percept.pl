@@ -18,11 +18,9 @@ processPosition(X, Y, Land, Objects):-
 	oro([X,Y],_),
 	retract(oro([X,Y],_)).
 
-% tercer caso: no recuerdo que haya habido oro anteriormente.
-% si falla, es o bien porque no habia oro en esa posicion, o porque el oro esta y ya era recordado,
+% tercer caso: no recuerdo que haya habido oro anteriormente,
 % asi que unicamente guardo el mapa.
 processPosition(X, Y, Land, Objects):-
-	% write('Estoy en el segundo caso para la posicion '), write(X), write(','), write(Y), nl, nl,
 	assert_once(map(X, Y, Land)).  % Guardamos el mapa
 	
 	
