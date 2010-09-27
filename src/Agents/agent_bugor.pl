@@ -31,7 +31,6 @@ run:-
       % agregado esto para que el agente actue en modo joystick
 	  % write('ACCION?: '), read(Action),
 	  random(0,20,ActionNumber),
-	  write(ActionNumber), nl, nl,
 	  decide_action(ActionNumber, Action),
 	  do_action(Action),
 %       do_action(none),
