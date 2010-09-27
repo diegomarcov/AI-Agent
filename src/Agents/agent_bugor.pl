@@ -29,12 +29,19 @@ run:-
 	  % ag_name(AgName),
       % display_ag(AgName, Perc), nl,
       % agregado esto para que el agente actue en modo joystick
-	  write('ACCION?: '), read(Action),
+	  % write('ACCION?: '), read(Action),
+	  random(0,20,ActionNumber),
+	  write(ActionNumber), nl, nl,
+	  decide_action(ActionNumber, Action),
 	  do_action(Action),
 %       do_action(none),
       run.
       
-decide_action(attack(_Victim)).
+decide_action(0, turn(n)).
+decide_action(1, turn(s)).
+decide_action(2, turn(e)).
+decide_action(3, turn(w)).
+decide_action(_, move_fwd).
       
 start_ag:- 
 	init_debug,

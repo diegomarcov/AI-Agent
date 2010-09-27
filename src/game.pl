@@ -7,6 +7,14 @@ que simplemente no haga nada. VER)
 Hacer una thread que cada 10 segundos, o un poco más, elimine los nombres de
 los agentes que se desconectaron (elimina todos aquellos cuyos ids no aparecen
 en la lista de which_agents).
+
+Generalizaciones:
+- Hacer algo parecido a los atributo climbing y climbing_for, que sea
+time executing_action y executing action_for. Además definir un
+set_executin_action (en lugar de set_climbing) que lo ponga a ejecutar
+la accion, y dependiendo de la misma lo pone el tiempo que corresponda
+(en game settings defino para cada accion su costo en tiempo, al igual
+que defino su costo en stamina).
 */
 
 :- dynamic turn/1, forbidden_entry/3, ag_attr/3.
@@ -126,13 +134,13 @@ ag_attr(AgName, previous_turn_action, Action):-
                             not(CurrTurn is ActionTurn + 1),
                             Action = none
                           ).
-                          
+
 ag_attr(AgName, attacked_by, Attackers):- ag_attr(AgName, attacked_by_possibly_empty, Attackers),
                                           Attackers \= [].
-                                          
+
 ag_attr(AgName, harmed_by, Attackers):- ag_attr(AgName, harmed_by_possibly_empty, Attackers),
                                           Attackers \= [].
-                                          
+
 ag_attr(AgName, fight_skill, FightSkill):- ag_attr(AgName, attacks_won, AttacksWon),
                                            fight_skill_function(AttacksWon, FightSkill).
 
@@ -140,6 +148,9 @@ ag_attr(AgName, fight_skill, FightSkill):- ag_attr(AgName, attacks_won, AttacksW
 % fight_skill_computed, y que fight_skill consulte de ahí mientras ninguno de los valores
 % empleados para calcular fight skill haya cambiado. Ver como determinarlo, pero me parece que no
 % conviene.
+
+ag_attr(AgName, max_stamina, MaxStamina):- ag_attr(AgName, num_of_training_actions, TrainingActions),
+                                           max_stamina_function(TrainingActions, MaxStamina).
 
 %ag_attr(_AgName, previous_turn_action, none).
 
@@ -149,15 +160,19 @@ ag_attr(AgName, fight_skill, FightSkill):- ag_attr(AgName, attacks_won, AttacksW
 %% Initializes agent info
 
 ag_registration_setup(AgName):-
-          max_stamina(MaxSt),
-          assert(ag_attr(AgName, max_stamina, MaxSt)),
+%          assert(ag_attr(AgName, max_stamina, MaxSt)),
 %          initial_fight_skill(InitFS),
 %          assert(ag_attr(AgName, fight_skill, InitFS)),
 %         assert(ag_attr(AgName, load_capacity, 10)),
 %          ags_starting_pos(StartingPos),
+
+	  assert(ag_attr(AgName, attacks_won, 0)),
+	  assert(ag_attr(AgName, num_of_training_actions, 0)),
+
           ag_starting_position([StartingPos, StartingDir]),
           assert(ag_attr(AgName, pos, StartingPos)), % set Agent position
           assert(ag_attr(AgName, dir, StartingDir)), % set Agent direction
+	  ag_attr(AgName, max_stamina, MaxSt),
           assert(ag_attr(AgName, stamina, MaxSt)), % set current Agent stamina
           assert(ag_attr(AgName, unconscious_for, -1)), % set Agent "conscious state"
           assert(ag_attr(AgName, climbing_for, -1)), % set Agent "climbing state"
@@ -166,12 +181,12 @@ ag_registration_setup(AgName):-
           assert(ag_attr(AgName, last_action, [none, 0])),
           assert(ag_attr(AgName, attacked_by_possibly_empty, [])),
           assert(ag_attr(AgName, harmed_by_possibly_empty, [])),
-          assert(ag_attr(AgName, attacks_won, 0)),
-          
+
+
           ag_attr(AgName, pos, AgPos),
           ag_attr(AgName, dir, AgDir),
           assert(j_new_agent(AgName, AgPos, AgDir)).
-          
+
 
 
 n_of_connected_ags(NCA):- which_agents(Agents),
@@ -206,19 +221,19 @@ run:- run_one_turn,!,
 run_one_turn:-
       %sleep(aire) %cuidado! asegurarme que igual reciba mensajes.
       dynamic_env_update,
-      
+
       display_env, nl,
-      
+
       give_requested_percs, %give requested percepts
       %write('give_requested_percs finalizó con exito'), nl,
-      
+
       post_perc_dynamic_env_update,
-      
+
       time_to_think(TimeToThink),
       sleep(TimeToThink),
       excecute_available_actions.
-      
-      
+
+
 dynamic_env_update:- retract(turn(PrevT)),
                      CurrentT is PrevT + 1,
                      assert(turn(CurrentT)),
@@ -236,7 +251,7 @@ dynamic_env_update:- retract(turn(PrevT)),
                              ag_attr(AgName, pos, Pos),
                              ag_attr(AgName, stamina, St),
                              ag_attr(AgName, max_stamina, MaxSt)),
-                             
+
                              (St = MaxSt,
                               ady_at_cardinal(Pos, _Card, AdyPos),
                               not(cell_land(AdyPos, forest)),
@@ -248,13 +263,13 @@ dynamic_env_update:- retract(turn(PrevT)),
                               forbidden_entry_time(FET),
                               UntilTurn is Turn + FET,
                               assert(forbidden_entry(AgName, BName, UntilTurn))
-                              
+
                                  ;
-                                 
+
                               (St < MaxSt, %podría quitar esta condición
                               hostel_recovery_rate(RR),
                               update_attr(AgName, stamina, _CurrSt, NewSt, NewSt is min(St+RR, MaxSt))))),
-                              
+
                       forall((forbidden_entry(AgName, BName, UntilTurn), turn(Turn), Turn > UntilTurn),
                              retract(forbidden_entry(AgName, BName, UntilTurn))).
 
@@ -266,7 +281,7 @@ post_perc_dynamic_env_update:- forall(ag_attr(AgName, attacked_by_possibly_empty
                                %retractall(ag_attr(AgName, attacked_by, _Attackers)),
                                %retractall(ag_attr(AgName, harmed_by, _Attackers)).
 
-      
+
 give_requested_percs:-
                    registered_agents(Ags),
                    forall((member(Ag, Ags), not(unconscious(Ag)), not(climbing(Ag)), perc_request_available(Ag)), assert(perc_request_from(Ag))),
@@ -285,7 +300,7 @@ give_requested_percs:-
                    %El retract(perc_request_from(Ag)) lo hago luego del generate_perc(Ag, Perc) por si este último falla, así no me olvido
                    %que todavía le debo la percepción al agente.
                    forall(perc_for(Ag, Perc), (give_percept(Perc, Ag), retract(perc_for(Ag, Perc)))).
-                   
+
 % Considerar la alternativa de usar un hilo que constantemenre reciba solicitudes de percepciones
 % y las responda. Usar semáforo para lograr atomicidad de la operación de update_game_state!!
 % Con esto me evito el sleep(aire)!!!
@@ -324,18 +339,18 @@ generate_vision(Ag, Vision):-
                                                    cell_land(Pos, Land),
                                                    cell_content_vision(Pos, Objects)),
                              Vision).
-                             
+
 cell_content_vision(Pos, Content):- findall([ThingType, ThingName, VisibleDescr],
                                             (at([ThingType, ThingName], Pos), visible_descr([ThingType, ThingName], VisibleDescr)), Content).
-                                            
+
 % visible_descr([ThingType, ThingName], VisibleDescr))
 
 visible_descr([agent, AgName], VisibleDescr):-
                           findall([AttrName, AttrVal], (visible_attr(agent, AttrName), ag_attr(AgName, AttrName, AttrVal)), VisibleDescr).
-                          
+
 visible_descr([BType, BName], BDescr):-
                           building(BType, BName, _Pos, BDescr).
-                          
+
 visible_descr([ObjType, ObjName], ObjDescr):-
                           object_at([ObjType, ObjName, ObjDescr], _Pos).
 
@@ -397,7 +412,7 @@ excecute_available_actions:-
                             forall((member(Ag, Ags), action_available(Action, Ag)), assert(action_from(Action, Ag))),
                             update_game_state.
                             % NO OLVIDARME DE QUITAR TODAS LAS ACCIONES.
-                            
+
 % Esta forma de ejecutar las acciones, es decir, se juntan todas las disponibles
 % y se ejecutan todos "a la vez", evita que el entorno cambie mientras que un
 % agente está pensando su próxima acción (por supuesto, salvo que el agente se
@@ -481,8 +496,8 @@ can_attack(Ag1, Ag2):-
                 ady_at_cardinal(FrontPos, NextDirAg1, FrontRightPos),
                 ady_at_cardinal(FrontPos, PrevDirAg1, FrontLeftPos),
                 (PosAg2 = FrontPos ; PosAg2 = FrontRightPos ; PosAg2 = FrontLeftPos ; PosAg2 = PosAg1).
-                
-                
+
+
 
 action(pickup(ObjName), AgFrom,
 
@@ -531,7 +546,7 @@ not(unconscious(AgFrom))
  ag_attr(AgFrom, pos, Pos),
  %write(Pos),nl,
  assert(object_at([ObjType, ObjName, ObjDescr], Pos)),
- 
+
  stamina_cost(drop, C),
  update_attr(AgFrom, stamina, CurrSt, NewSt, NewSt is CurrSt - C),
  %write(ObjName),nl,
@@ -555,11 +570,13 @@ action(turn(Dir), AgFrom,
 
  %assert(j_agent_turned_dir(AgFrom, Dir)),
  assert(j_agent_action(AgFrom, turn(Dir))),
- 
+
  update_attr(AgFrom, dir, _CurrDir, Dir, true),
  stamina_cost(turn, C),
  update_attr(AgFrom, stamina, CurrSt, NewSt, NewSt is CurrSt - C),
- update_attr(AgFrom, last_action, _CurrVal, NewVal, (turn(Turn), NewVal = [turn(Dir), Turn]))
+ update_attr(AgFrom, last_action, _CurrVal, NewVal, (turn(Turn), NewVal = [turn(Dir), Turn])),
+ update_attr(AgFrom, num_of_training_actions, CurrTrainigActions, NewTrainigActions, NewTrainigActions is CurrTrainigActions + 1)
+
 )).
 
 % Auxiliary preds
@@ -605,7 +622,8 @@ action(move_fwd, AgFrom,
         )),
  %assert(j_agent_moved_to(AgFrom, DestPos))
  update_attr(AgFrom, last_action, _CurrVal, NewVal, (turn(Turn), NewVal = [move_fwd, Turn])),
- assert(j_agent_action(AgFrom, move_to(DestPos)))
+ assert(j_agent_action(AgFrom, move_to(DestPos))),
+ update_attr(AgFrom, num_of_training_actions, CurrTrainigActions, NewTrainigActions, NewTrainigActions is CurrTrainigActions + 1)
 )).
 
 % Actions auxiliary predicates
@@ -616,7 +634,7 @@ action(move_fwd, AgFrom,
 %                  retract(ag_attr(Ag, resting_for, _)),
 %                  assert(ag_attr(Ag, resting_for, RT)).
 
-                  
+
 climbing(Ag):- ag_attr(Ag, climbing, true).
 
 set_climbing(Ag):- update_attr(Ag, climbing_for, _CurrV, CT, climbing_time(CT)).
@@ -693,10 +711,10 @@ set_unconscious:- forall((ag_attr(Ag, stamina, St), St =< 0, ag_attr(Ag, unconsc
                          (update_attr(Ag, unconscious_for, _CurrV, UT, unconscious_time(UT)),
                          drop_all_objects(Ag),
                          assert(j_agent_becomes_unconscious(Ag)))). % Cuando el agente queda inconsciente, suelta todos los objetos que lleva y estos quedan en el piso.
-                  
+
 drop_all_objects(Ag):- ag_attr(Ag, pos, Pos), forall(has(Ag, Obj), (retract(has(Ag, Obj)), assert(object_at(Obj, Pos)))),
                        assert(j_drop_all(Ag)).
-                  
+
 
 
 %handle_move(...)

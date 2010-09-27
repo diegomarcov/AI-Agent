@@ -30,8 +30,10 @@ hostel_recovery_rate(20).
 :- n_of_arrows(R),
    n_of_columns(C),
    MS is round(R*C/2),
-   assert(max_stamina(MS)).
+   assert(initial_max_stamina(MS)).
 
+% Deprecated predicate. Only for compatibility reasons (used from JAVA)
+max_stamina(MS):- initial_max_stamina(MS).
 
 initial_fight_skill(100).
 
@@ -42,23 +44,27 @@ fight_skill_function(AttacksWon, FightSkill):-
                                 initial_fight_skill(InitialFightSkill),
                                 FightSkill is floor(InitialFightSkill + 2*sqrt(AttacksWon)).
 
+max_stamina_function(TrainingActions, MaxStamina):-
+	                        initial_max_stamina(InitialMaxStamina),
+                                MaxStamina is floor(InitialMaxStamina + 2*sqrt(TrainingActions)).
+
 %forbidden_entry_time(FET):- max_stamina(MS),
 %                            FET is round(MS/2).
 
-:- max_stamina(MS),
+:- initial_max_stamina(MS),
    FET is round(MS/2),
    assert(forbidden_entry_time(FET)).
-                            
+
 %wake_up_stamina(20).
 %wake_up_stamina(WS):- max_stamina(MS),
 %                      WS is round(MS * 0.2).
 
-:- max_stamina(MS),
+:- initial_max_stamina(MS),
    WS is round(MS * 0.2),
    assert(wake_up_stamina(WS)).
 
-                      
-                            
+
+
 stamina_cost(attack, 1).
 stamina_cost(turn, 1).
 stamina_cost(move_fwd_plain, 1).
