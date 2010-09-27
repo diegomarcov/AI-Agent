@@ -39,6 +39,8 @@ showstringspaces=false}
 	
 	En cuanto a la modularizaci\'on, $agent\_bugor.pl$ es el archivo principal del agente, en donde se definen los predicados principales (run, start\_ag, etc), y en el directorio $bugorLib$ se encuentran dos archivos: $auxiliares.pl$, en donde se implementan predicados de debugging, y operaciones que no est\'an relacionadas de forma directa ni con el comportamiento ni con la percepci\'on, y en $percept.pl$ se encuentra la implementaci\'on del predicado update\_state, as\'i como todos los predicados que se desprenden de \'el.
 
+	Por \'ultimo, se aclara que actualmente el movimiento del agente es aleatorio; es decir, no realiza ning\'un tipo de consideraciones para moverse, simplemente se genera un n\'umero al azar y de acuerdo a \'este el agente decide si gira o avanza.
+
 \section{Percepciones}
 	\subsection{Turno}
 	
