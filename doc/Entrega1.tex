@@ -55,7 +55,7 @@ save_turn(Turn):-
 
 	\subsection{Mapa}
 	
-	Para cada celda del campo $Vision$, el agente mantendr\'a un ``mapa mental'' con el contenido de \'este. Para realizar esto, se guardar\'a $mapa(X, Y, Land)$ para todas las celdas por cada nueva percepci\'on. El campo $Land$ corresponde al segundo elemento de la lista $Vision$ que se recibe como parte de la percepci\'on. Adicionalmente, se realiza un checkeo para comprobar si anteriormente hab\'ia oro en esa posici\'oin; si ese es el caso, pero el oro ya no se encuentra, se elimina el agente deja de recordarlo.
+	Para cada celda del campo $Vision$, el agente mantendr\'a un ``mapa mental'' con el contenido de \'este. Para realizar esto, se guardar\'a $mapa(X, Y, Land)$ para todas las celdas por cada nueva percepci\'on. El campo $Land$ corresponde al segundo elemento de la lista $Vision$ que se recibe como parte de la percepci\'on. Adicionalmente, se realiza un checkeo para comprobar si anteriormente hab\'ia oro en esa posici\'oin; si ese es el caso, pero el oro ya no se encuentra, se elimina y el agente deja de recordarlo.
 	
 		\subsubsection{C\'odigo}
 		\begin{lstlisting}
@@ -131,6 +131,8 @@ analize_things([Pos, Obj]):-
 	La lista de agentes contendr\'a elementos que estar\'an formados por el nombre del agente y cierta caracterizaci\'on de \'este; por ejemplo, si fue visto atacando a otro implicar\'ia que el agente es agresivo y puede poseer alto fight\_skill. Por otro lado, si el agente fue visto recogiendo oro se aumentar\'a la prioridad de \'este en la lista. 
 	
 	Se considera, adem\'as, un caso especial para aquellos agentes que fueron vistos inm\'oviles, (previous\_turn\_action = none), a quienes denominamos ``lentos''. Puede que alg\'un agente piense demasiado y pierda un turno, lo cual puede significar cierta ventaja a la hora de atacarlo.
+	
+	Por otro lado, cuando un agente conocido es visto inconsciente, se llevan a cero los campos referentes a la cuan agresivo es y a cuanto oro potencial puede tener.
 	
 	La lista de agentes contendr\'a elementos con la estructura \\
 	$agente(Nombre, VecesVistoAtacando, VecesVistoRecojiendoTesoros, EsLento)$.
@@ -210,7 +212,19 @@ remember_agent(Name, [previous_turn_action, none]):-
 	(...)
 	insert_agent(Name, 0, 0, true),
 	(...)
+	
+% Si el agente esta inconsciente y ya lo conocemos
+remember_agent(Name, [unconscious, true]):-
+	agentes(A),
+	member(agente(Name, Attack, Picking, Slow), A),
+	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA),
+	replace(agentes(_), agentes(NewA)),
+	insert_agent(Name, 0, 0, Slow).
 
+% Si el agente esta inconsciente y no lo conocemos
+remember_agent(Name, [unconscious, true]):-
+	insert_agent(Name, 0, 0, false).
+	
 % Si el agente no hizo nada
 remember_agent(Name, [Attr, Val]):- 
 	debug(warning, 'remember_agent: Case G: What the hell is this?'),
@@ -234,6 +248,21 @@ insert_agent(Name, Attack, Picking, Slow):-
 % Caso especial que el agente ya este insertado, no se hace nada.
 % Es decir, el not(memeber()) falla
 insert_agent(Name, Attack, Picking, Slow).
+	\end{lstlisting}
+	
+	Si bien la lista de agentes se dice ordenada por prioridad, mantener dicha lista ordenada no ser\'ia de real ayuda a la hora de decidir un comportamiento frente a alg\'un grupo de agentes. En realidad se cuenta con un predicado llamado $agent_priority$ que dado un agente devuelve un n\'umero entero entre $0$ y $200$, siendo $0$ la menor prioridad y $200$ la mayor.
+	
+	Como se puede ver en la implementaci\'on del predicado, la funci\'on usada es arbitraria en cuanto a las operaciones utilizadas, pero bajo la \'unica condici\'on que se mantenga normalizada entre las cotas estipuladas para realizar una comparaci\'on justa entre agentes. Se puede ver claramente c\'omo a los a los agentes ``lentos'' se les da mas prioridad simplemente duplicando la prioridad ``neta'' del agente.
+	
+	\begin{lstlisting}
+agent_priority(agente(_Name, Attack, Pick, false), Priority):-
+	Total is Pick + Attack,
+	Priority is Pick * 100 / Total.
+
+agent_priority(agente(_Name, Attack, Pick, true), Priority):-
+	Total is Pick + Attack,
+	Temp is Pick * 100 / Total,
+	Priority is Temp * 2.
 	\end{lstlisting}
 
 	
