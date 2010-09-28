@@ -18,7 +18,7 @@ showstringspaces=false}
 \title{{\bf Proyecto: Etapa 1}\\ Inteligencia Artificial\vspace{10mm}}
 \author{{\bf Profesor:}\\ Simari, Guillermo\\
 {\bf Asistente:}\\ Gomez Lucero, Mauro\\
-{\bf Comisi\'on:}\\ Marcovecchio, Diego. LU: \\ Touceda, Tom\'as. LU: 84024}
+{\bf Comisi\'on:}\\ Marcovecchio, Diego. LU: 83815\\ Touceda, Tom\'as. LU: 84024}
 \date{}
 
 \maketitle
@@ -135,7 +135,7 @@ analize_things([Pos, Obj]):-
 	Por otro lado, cuando un agente conocido es visto inconsciente, se llevan a cero los campos referentes a la cuan agresivo es y a cuanto oro potencial puede tener.
 	
 	La lista de agentes contendr\'a elementos con la estructura \\
-	$agente(Nombre, VecesVistoAtacando, VecesVistoRecojiendoTesoros, EsLento)$.
+	$agente(Nombre, VecesVistoAtacando, VecesVistoRecogiendoTesoros, EsLento)$.
 	
 % 	Otra cuesti\'on importante es determinar un cierto posicionamiento de los agentes en el mapa. A cada agente se le asignar\'a una zona del mapa, de esta forma, en caso de tener baja stamina o no tener fight\_skill alto, el agente priorizar\'a zonas donde no se hayan visto agentes agresivos. 
 % 	
@@ -250,7 +250,7 @@ insert_agent(Name, Attack, Picking, Slow):-
 insert_agent(Name, Attack, Picking, Slow).
 	\end{lstlisting}
 	
-	Si bien la lista de agentes se dice ordenada por prioridad, mantener dicha lista ordenada no ser\'ia de real ayuda a la hora de decidir un comportamiento frente a alg\'un grupo de agentes. En realidad se cuenta con un predicado llamado $agent_priority$ que dado un agente devuelve un n\'umero entero entre $0$ y $200$, siendo $0$ la menor prioridad y $200$ la mayor.
+	Si bien la lista de agentes se dice ordenada por prioridad, mantener dicha lista ordenada no ser\'ia de real ayuda a la hora de decidir un comportamiento frente a alg\'un grupo de agentes. En realidad se cuenta con un predicado llamado $agent\_priority$ que dado un agente devuelve un n\'umero entero entre $0$ y $200$, siendo $0$ la menor prioridad y $200$ la mayor.
 	
 	Como se puede ver en la implementaci\'on del predicado, la funci\'on usada es arbitraria en cuanto a las operaciones utilizadas, pero bajo la \'unica condici\'on que se mantenga normalizada entre las cotas estipuladas para realizar una comparaci\'on justa entre agentes. Se puede ver claramente c\'omo a los a los agentes ``lentos'' se les da mas prioridad simplemente duplicando la prioridad ``neta'' del agente.
 	
