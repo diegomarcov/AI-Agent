@@ -132,7 +132,7 @@ analize_things([Pos, Obj]):-
 	
 	Se considera, adem\'as, un caso especial para aquellos agentes que fueron vistos inm\'oviles, (previous\_turn\_action = none), a quienes denominamos ``lentos''. Puede que alg\'un agente piense demasiado y pierda un turno, lo cual puede significar cierta ventaja a la hora de atacarlo.
 	
-	Por otro lado, cuando un agente conocido es visto inconsciente, se llevan a cero los campos referentes a la cuan agresivo es y a cuanto oro potencial puede tener.
+	Por otro lado, cuando un agente conocido es visto inconsciente, se llevan a cero el campo que indica cuanto oro puede que el agente tenga.
 	
 	La lista de agentes contendr\'a elementos con la estructura \\
 	$agente(Nombre, VecesVistoAtacando, VecesVistoRecogiendoTesoros, EsLento)$.
