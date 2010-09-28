@@ -129,7 +129,7 @@ remember_agent(Name, [unconscious, true]):-
 	member(agente(Name, Attack, Picking, Slow), A), % Si ya vimos al agente
 	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
 	replace(agentes(_), agentes(NewA)),
-	insert_agent(Name, 0, 0, Slow).
+	insert_agent(Name, Attack, 0, Slow).
 
 % Si el agente esta inconsciente y no lo conocemos
 remember_agent(Name, [unconscious, true]):-
