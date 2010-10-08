@@ -1,4 +1,10 @@
 % Estrategia general
 :- consult(strategies/general).
 
-decide_action(none).
+% X puede ser: initial, explore, hitNrun, pickGold, fleeLikeAPussy, fleeHostel,
+% killkillkill
+current_strategy(X):- strategy_stack([X|_]).
+
+decide_action(Action):- 
+	current_strategy(explore),
+	explore_strat(Action).

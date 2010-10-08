@@ -78,8 +78,11 @@ analize_things([_Pos, Obj]):-
 	forall(member([AttrName, Value], Attrs), remember_agent(Name, [AttrName, Value])).
 
 % este caso es cuando bugor se ve a si mismo; simplemente se ignora
-analize_things([_Pos, Obj]):-
-	Obj = [agent, bugor, _Attrs].
+analize_things([Pos, Obj]):-
+	Obj = [agent, bugor, Attrs],
+	member([dir, D], Attrs),
+	replace(direction(_), direction(D)),
+	replace(current_pos(_), current_pos(Pos)).
 
 % Predicado para filtrar atributos de agente
 %

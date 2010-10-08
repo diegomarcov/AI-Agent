@@ -19,11 +19,18 @@
 :- dynamic oro/2.
 :- dynamic agentes/1.
 :- dynamic ag_name/1.
+:- dynamic direction/1.
+:- dynamic current_pos/1.
+
+% Predicados dinamicos para el comportamiento
+:- dynamic strategy_stack/1.
 
 % init de los predicados dinamicos
 turn(0).
 posadas([]).
 agentes([]).
+% strategy_stack([initial]).
+strategy_stack([explore]).
 
 run:-
 	get_percept(Perc),
