@@ -9,6 +9,9 @@
 % Predicados que controlan el procesado de la percepsion
 :- consult(bugorLib/percept).
 
+% Predicados que controlan el comportamiento
+:- consult(bugorLib/behave).
+
 % Predicados dinamicos para la percepsion
 :- dynamic map/3.
 :- dynamic turn/1.
@@ -23,35 +26,27 @@ posadas([]).
 agentes([]).
 
 run:-
-      get_percept(Perc),
-      update_state(Perc),
-      % decide_action(Action),
-	  % ag_name(AgName),
-      % display_ag(AgName, Perc), nl,
-      % agregado esto para que el agente actue en modo joystick
-	  % write('ACCION?: '), read(Action),
-	  random(0,20,ActionNumber),
-	  decide_action(ActionNumber, Action),
-	  do_action(Action),
-%       do_action(none),
-      run.
-      
-decide_action(0, turn(n)).
-decide_action(1, turn(s)).
-decide_action(2, turn(e)).
-decide_action(3, turn(w)).
-decide_action(_, move_fwd).
-      
+	get_percept(Perc),
+	update_state(Perc),
+	% decide_action(Action),
+	% ag_name(AgName),
+	% display_ag(AgName, Perc), nl,
+	% agregado esto para que el agente actue en modo joystick
+	% write('ACCION?: '), read(Action),
+	decide_action(Action),
+	do_action(Action),
+	run.
+
 start_ag:- 
 	init_debug,
 	AgName = bugor,
 	register_me(AgName, Status),
-    !,
+	!,
 	write_file('REGISTRATION STATUS: '),
-    write_file(Status), nl, nl,
-    Status = connected,
-    assert(ag_name(AgName)),
-    run.
+	write_file(Status), nl, nl,
+	Status = connected,
+	assert(ag_name(AgName)),
+	run.
    
 s:- start_ag.
 
