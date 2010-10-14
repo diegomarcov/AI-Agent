@@ -225,7 +225,6 @@ remember_agent(Name, [unconscious, true]):-
 remember_agent(Name, [unconscious, true]):-
 	insert_agent(Name, 0, 0, false).
 	
-% Si el agente no hizo nada
 remember_agent(Name, [Attr, Val]):- 
 	debug(warning, 'remember_agent: Case G: What the hell is this?'),
 	term_to_atom(Attr, A),

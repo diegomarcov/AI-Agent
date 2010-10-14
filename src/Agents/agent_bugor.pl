@@ -26,6 +26,7 @@
 
 % Predicados dinamicos para el comportamiento
 :- dynamic strategy_stack/1.
+:- dynamic planning_stack/1.
 
 % init de los predicados dinamicos
 turn(0).
@@ -41,13 +42,8 @@ run:-
 	% display_ag(AgName, Perc), nl,
 	% agregado esto para que el agente actue en modo joystick
 	% write('ACCION?: '), read(Action),
-%     decide_action(Action),
-%	do_action(Action),
-      write('ACCION?: '), read(Action),
-      
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      
-      do_action(Action),
+	decide_action(Action),
+	do_action(Action),
 	run.
 
 start_ag:- 

@@ -12,8 +12,8 @@ processPosition(X, Y, Land, Objects):-
 % segundo caso: recuerdo que habia oro, pero alguien lo levanto!
 processPosition(X, Y, Land, Objects):-
 	assert_once(map(X, Y, Land)),  % Guardamos el mapa
-	member([treasure, Name, _], Objects),
 	oro(Name, [X,Y], _),
+	not(member([treasure, Name, _], Objects)),
 	retractall(oro(Name, [X,Y],_)).
 
 % tercer caso: no recuerdo que haya habido oro anteriormente,
