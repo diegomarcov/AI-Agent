@@ -16,7 +16,9 @@
 :- dynamic map/3.
 :- dynamic turn/1.
 :- dynamic posadas/1.
-:- dynamic oro/2.
+% oro(nombre, ubicacion, turno)
+% ubicacion = [X, Y] | nombre_de_agente
+:- dynamic oro/3.
 :- dynamic agentes/1.
 :- dynamic ag_name/1.
 :- dynamic direction/1.
@@ -27,7 +29,6 @@
 
 % init de los predicados dinamicos
 turn(0).
-posadas([]).
 agentes([]).
 % strategy_stack([initial]).
 strategy_stack([explore]).
@@ -41,7 +42,12 @@ run:-
 	% agregado esto para que el agente actue en modo joystick
 	% write('ACCION?: '), read(Action),
 %     decide_action(Action),
-	do_action(move_fwd),
+%	do_action(Action),
+      write('ACCION?: '), read(Action),
+      
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      
+      do_action(Action),
 	run.
 
 start_ag:- 

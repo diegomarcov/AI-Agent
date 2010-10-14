@@ -18,8 +18,8 @@ assert_once(X):-
 % Utilizado para "recordar" tesoros solo una
 % vez. Se trata aparte porque al almacenar el 
 % turno tambien, el assert_once no funciona
-assert_once_oro(Pos, Turno):- 
-	replace(oro(Pos, _), oro(Pos, Turno)).
+assert_once_oro(Name, Pos, Turno):- 
+	replace(oro(Name, _, _), oro(Name, Pos, Turno)).
 
 % Debug a archivo
 write_file(T):- 

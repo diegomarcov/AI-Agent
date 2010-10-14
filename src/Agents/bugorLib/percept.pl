@@ -5,16 +5,16 @@ update_state([Turn, Vision, _Attr, _Inventory]):-
 	save_map(Vision).
 
 % primer caso: recuerdo que habia oro, y sigue estando
+% Actualizo el turno en el que se lo vio.
 processPosition(X, Y, Land, Objects):-
-	assert_once(map(X, Y, Land)),  % Guardamos el mapa
-	oro([X,Y],_),
-	member([treasure,_name,_data], Objects).
+	assert_once(map(X, Y, Land)).  % Guardamos el mapa
 	
 % segundo caso: recuerdo que habia oro, pero alguien lo levanto!
 processPosition(X, Y, Land, Objects):-
 	assert_once(map(X, Y, Land)),  % Guardamos el mapa
-	oro([X,Y],_),
-	retract(oro([X,Y],_)).
+	member([treasure, Name, _], Objects),
+	oro(Name, [X,Y], _),
+	retractall(oro(Name, [X,Y],_)).
 
 % tercer caso: no recuerdo que haya habido oro anteriormente,
 % asi que unicamente guardo el mapa.
@@ -35,7 +35,7 @@ save_map(Vision):-
 	forall(member([Pos, Obj], ObjectsAtSight), (analize_things([Pos, Obj]))),
 	findall([X, Y], posadas([X,Y]), P),
 	debug_term(info, 'Known hostels: ', P),
-	findall(X, oro(X, _Y), O),
+	findall([Name, Pos, T], oro(Name, Pos, T), O),
 	debug_term(info, 'Known treasures: ', O),
 	agentes(A),
 	debug_term(info, 'Known agents: ', A).
@@ -59,21 +59,36 @@ analize_things([Pos, Obj]):-
 % NOTA: Los tesoros tienen como atributo el valor
 % pero parece ser siempre 100.
 analize_things([Pos, Obj]):-
-	Obj = [treasure, _Name, _Attrs],
+	Obj = [treasure, Name, _Attrs],
 	% Agrego el tesoro
 	turn(T), % Se guarda el turno en el que se vio
-	assert_once_oro(Pos, T).
+	oro(Name, [X, Y], _), % Se recordaba el oro en esa posicion (no "en la mano" de ningun agente)
+	assert_once_oro(Name, Pos, T).
+
+analize_things([Pos, Obj]):-
+	Obj = [treasure, Name, _Attrs],
+	% Agrego el tesoro
+	turn(T), % Se guarda el turno en el que se vio
+	oro(Name, AgName, _), % Se recordaba el oro en la mano del agente AgName y ahora esta en el piso
+	agentes(A),
+	assert_once_oro(Name, Pos, T),
+	% Por lo tanto, restamos 1 a la cantidad de oro potencial que tiene AgName
+	member(agente(AgName, Attack, Picking, Slow), A), % Si ya vimos al agente
+	subtract(A, [agente(AgName, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
+	NewPick is Picking - 1,
+	replace(agentes(_), agentes(NewA)),
+	insert_agent(AgName, Attack, NewPick, Slow).
 
 % NOTAS:
 % - Recordar ver si el agente es uno mismo % - En los atributos:
 %    - previous_turn_action = {none, attack(name), turn(orientation), pickup(objname), move_fwd}
 %    - unconscious = {true, false}
 %    - dir = {n, s, w, e}
-analize_things([_Pos, Obj]):-
+analize_things([Pos, Obj]):-
 	Obj = [agent, Name, Attrs],
 	Name \= bugor, % Descartamos analizar este mismo agente
 	% Para todos los agentes: se lo recuerda
-	forall(member([AttrName, Value], Attrs), remember_agent(Name, [AttrName, Value])).
+	forall(member([AttrName, Value], Attrs), remember_agent(Name, Pos, [AttrName, Value])).
 
 % este caso es cuando bugor se ve a si mismo; simplemente se ignora
 analize_things([Pos, Obj]):-
@@ -85,7 +100,7 @@ analize_things([Pos, Obj]):-
 % Predicado para filtrar atributos de agente
 %
 % Si se lo vio atacando a otro, y ya conocemos a este agente:
-remember_agent(Name, [previous_turn_action, attack(_)]):-
+remember_agent(Name, _, [previous_turn_action, attack(_)]):-
 	agentes(A),
 	member(agente(Name, Attack, Picking, Slow), A), % Si ya vimos al agente
 	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
@@ -94,26 +109,48 @@ remember_agent(Name, [previous_turn_action, attack(_)]):-
 	insert_agent(Name, NewAttack, Picking, Slow). % Guardamos al agente con los nuevos datos
 
 % Si el predicado member falla, es decir, nunca vimos a este agente:
-remember_agent(Name, [previous_turn_action, attack(_)]):-
+remember_agent(Name, _, [previous_turn_action, attack(_)]):-
 	agentes(A),
 	insert_agent(Name, 1, 0).
 
 % Analogamente para los tesoros recojidos
-remember_agent(Name, [previous_turn_action, pickup(_)]):-
+remember_agent(Name, _, [previous_turn_action, pickup(TName)]):-
 	agentes(A),
 	member(agente(Name, Attack, Picking, Slow), A), % Si ya vimos al agente
 	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
 	NewPick is Picking + 1,
 	replace(agentes(_), agentes(NewA)),
+	turn(T),
+	replace(oro(TName, _, _), oro(TName, Name, T)),
+	insert_agent(Name, Attack, NewPick, Slow).
+
+% Analogamente para los tesoros recojidos
+remember_agent(Name, Pos, [previous_turn_action, drop(TName)]):-
+	agentes(A),
+	member(agente(Name, Attack, Picking, Slow), A), % Si ya vimos al agente
+	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
+	NewPick is Picking - 1,
+	replace(agentes(_), agentes(NewA)),
+	turn(T),
+	replace(oro(TName, _, _), oro(TName, Pos, T)),
 	insert_agent(Name, Attack, NewPick, Slow).
 
 % Si el predicado member falla, es decir, nunca vimos a este agente:
-remember_agent(Name, [previous_turn_action, pickup(_)]):-
+remember_agent(Name, _, [previous_turn_action, pickup(TName)]):-
 	agentes(A),
+	turn(T),
+	replace(oro(TName, _, _), oro(TName, Name, T)),
 	insert_agent(Name, 0, 1, false).
 
+% Si el predicado member falla, es decir, nunca vimos a este agente:
+remember_agent(Name, Pos, [previous_turn_action, pickup(TName)]):-
+	agentes(A),
+	turn(T),
+	replace(oro(TName, _, _), oro(TName, Pos, T)),
+	insert_agent(Name, 0, 0, false).
+
 % Si el agente no hizo nada y ya lo conocemos
-remember_agent(Name, [previous_turn_action, none]):-
+remember_agent(Name, _, [previous_turn_action, none]):-
 	agentes(A),
 	member(agente(Name, Attack, Picking, Slow), A), % Si ya vimos al agente
 	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
@@ -121,23 +158,24 @@ remember_agent(Name, [previous_turn_action, none]):-
 	insert_agent(Name, Attack, Picking, true).
 
 % Si el agente no hizo nada y no lo conocimos
-remember_agent(Name, [previous_turn_action, none]):-
+remember_agent(Name, _, [previous_turn_action, none]):-
 	insert_agent(Name, 0, 0, true).
 
 % Si el agente esta inconsciente y ya lo conocemos
-remember_agent(Name, [unconscious, true]):-
+remember_agent(Name, _, [unconscious, true]):-
 	agentes(A),
 	member(agente(Name, Attack, Picking, Slow), A), % Si ya vimos al agente
 	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
 	replace(agentes(_), agentes(NewA)),
+	retractall(oro(_, Name, _)), % Se olvidan todos los tesoros que recordabamos que tenia encima
 	insert_agent(Name, Attack, 0, Slow).
 
 % Si el agente esta inconsciente y no lo conocemos
-remember_agent(Name, [unconscious, true]):-
+remember_agent(Name, _, [unconscious, true]):-
 	insert_agent(Name, 0, 0, false).
 
-remember_agent(_Name, [Attr, Val]):-
-	debug(warning, 'remember_agent: Case G: What the hell is this?'),
+remember_agent(_, _, [Attr, Val]):-
+%     debug(warning, 'remember_agent: Case G: What the hell is this?'),
 	term_to_atom(Attr, A),
 	term_to_atom(Val, V),
 	concat(A, ' = ', Str),
