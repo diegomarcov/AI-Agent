@@ -58,12 +58,12 @@ analize_things([Pos, Obj]):-
 
 % NOTA: Los tesoros tienen como atributo el valor
 % pero parece ser siempre 100.
-analize_things([Pos, Obj]):-
+analize_things([[X, Y], Obj]):-
 	Obj = [treasure, Name, _Attrs],
 	% Agrego el tesoro
 	turn(T), % Se guarda el turno en el que se vio
 	oro(Name, [X, Y], _), % Se recordaba el oro en esa posicion (no "en la mano" de ningun agente)
-	assert_once_oro(Name, Pos, T).
+	assert_once_oro(Name, [X, Y], T).
 
 analize_things([Pos, Obj]):-
 	Obj = [treasure, Name, _Attrs],
@@ -143,7 +143,7 @@ remember_agent(Name, _, [previous_turn_action, pickup(TName)]):-
 	insert_agent(Name, 0, 1, false).
 
 % Si el predicado member falla, es decir, nunca vimos a este agente:
-remember_agent(Name, Pos, [previous_turn_action, pickup(TName)]):-
+remember_agent(Name, Pos, [previous_turn_action, drop(TName)]):-
 	agentes(A),
 	turn(T),
 	replace(oro(TName, _, _), oro(TName, Pos, T)),
@@ -174,13 +174,13 @@ remember_agent(Name, _, [unconscious, true]):-
 remember_agent(Name, _, [unconscious, true]):-
 	insert_agent(Name, 0, 0, false).
 
-remember_agent(_, _, [Attr, Val]):-
+remember_agent(_, _, [Attr, Val]):- true.
 %     debug(warning, 'remember_agent: Case G: What the hell is this?'),
-	term_to_atom(Attr, A),
-	term_to_atom(Val, V),
-	concat(A, ' = ', Str),
-	concat(Str, V, Str2),
-	debug(warning, Str2).
+%     term_to_atom(Attr, A),
+%     term_to_atom(Val, V),
+%     concat(A, ' = ', Str),
+%     concat(Str, V, Str2),
+%     debug(warning, Str2).
 
 % Inserta a un agente en la lista
 % Caso especial:
