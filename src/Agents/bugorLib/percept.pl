@@ -33,7 +33,7 @@ save_map(Vision):-
 	debug_term(info, 'Known Map: ', M),
 	objects_at_sight(Vision, ObjectsAtSight), % Recolectamos los objetos que vemos
 	forall(member([Pos, Obj], ObjectsAtSight), (analize_things([Pos, Obj]))),
-	posadas(P),
+	findall([X, Y], posadas([X,Y]), P),
 	debug_term(info, 'Known hostels: ', P),
 	findall(X, oro(X, _Y), O),
 	debug_term(info, 'Known treasures: ', O),
@@ -48,15 +48,13 @@ save_map(Vision):-
 % este es el caso en el que pasa por un hotel que ya conoce
 analize_things([Pos, Obj]):-
 	Obj = [hostel, _Name, _Attrs],
-	posadas(P),
-	member(Pos, P).
+	posadas(Pos).
 
 % en este caso, el agente ve un hotel nuevo
 analize_things([Pos, Obj]):-
 	Obj = [hostel, _Name, _Attrs],
-	posadas(P),
-	% Agrego la posada a la lista
-	replace(posadas(_), posadas([Pos | P])).
+	% Agrego la posada
+	assert_once(posadas(Pos)).
 
 % NOTA: Los tesoros tienen como atributo el valor
 % pero parece ser siempre 100.
