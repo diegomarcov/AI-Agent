@@ -35,234 +35,57 @@ showstringspaces=false}
 
 \section{Consideraciones previas}
 
-	Con $(...)$ en las secci\'on de c\'odigo se simboliza que \'este es un extracto del predicado completo. Esto ocurre porque en el predicado posiblemente se resuelva m\'as de un problema a la vez, por lo que no todo el c\'odigo tendr\'a que ver con la secci\'on que lo refiere.
-	
-	En cuanto a la modularizaci\'on, $agent\_bugor.pl$ es el archivo principal del agente, en donde se definen los predicados principales (run, start\_ag, etc), y en el directorio $bugorLib$ se encuentran dos archivos: $auxiliares.pl$, en donde se implementan predicados de debugging, y operaciones que no est\'an relacionadas de forma directa ni con el comportamiento ni con la percepci\'on, y en $percept.pl$ se encuentra la implementaci\'on del predicado update\_state, as\'i como todos los predicados que se desprenden de \'el.
+	En cuanto a la modularizaci\'on, $agent\_bugor.pl$ es el archivo principal del agente, en donde se definen los predicados principales (run, start\_ag, etc), y en el directorio $bugorLib$ se encuentran dos archivos: $auxiliares.pl$, en donde se implementan predicados de debugging, y operaciones que no est\'an relacionadas de forma directa ni con el comportamiento ni con la percepci\'on; y en $percept.pl$ se encuentra la implementaci\'on del predicado update\_state, as\'i como todos los predicados que se desprenden de \'el.
 
-	Por \'ultimo, se aclara que actualmente el movimiento del agente es aleatorio; es decir, no realiza ning\'un tipo de consideraciones para moverse, simplemente se genera un n\'umero al azar y de acuerdo a \'este el agente decide si gira o avanza.
+	Adem\'as, se aclara que actualmente el movimiento del agente es aleatorio; es decir, no realiza ning\'un tipo de consideraciones para moverse, simplemente se genera un n\'umero al azar y de acuerdo a \'este el agente decide si gira o avanza.
 
 \section{Percepciones}
 	\subsection{Turno}
 	
 	Dado que el estado del agente (stamina, oro, fight\_skill) es una propiedad que var\'ia a medida que los turnos van pasando, se almacenar\'a el n\'umero de turno actual. De esta forma, se podr\'an diferenciar estrategias que el agente persigue al comienzo del juego, de aquellas decisiones que se toman cuando el juego est\'e m\'as avanzado.
 	
-		\subsubsection{C\'odigo}
-		\begin{lstlisting}
-save_turn(Turn):- 
-	retract(turn(_)), 
-	assert(turn(Turn)).
-		\end{lstlisting}
-
 	\subsection{Mapa}
 	
-	Para cada celda del campo $Vision$, el agente mantendr\'a un ``mapa mental'' con el contenido de \'este. Para realizar esto, se guardar\'a $mapa(X, Y, Land)$ para todas las celdas por cada nueva percepci\'on. El campo $Land$ corresponde al segundo elemento de la lista $Vision$ que se recibe como parte de la percepci\'on. Adicionalmente, se realiza un checkeo para comprobar si anteriormente hab\'ia oro en esa posici\'oin; si ese es el caso, pero el oro ya no se encuentra, se elimina y el agente deja de recordarlo.
+	Para cada celda del campo $Vision$, el agente mantendr\'a un ``mapa mental'' con el contenido de \'este. Para realizar esto, se guardar\'a $mapa(X, Y, Land)$ para todas las celdas por cada nueva percepci\'on. El campo $Land$ corresponde al segundo elemento de la lista $Vision$ que se recibe como parte de la percepci\'on. \'Esta representaci\'on interna del mapa del mundo ser\'a utilizada repetidas veces en la fase de movimiento de Bugor, pues resultar\'a fundamental a la hora de encontrar caminos para trasladarse de un punto a otro del mapa.
 	
-		\subsubsection{C\'odigo}
-		\begin{lstlisting}
-save_map(Vision):- 
-	forall(member([[X, Y], Land, Objects], Vision),
-		processPosition(X, Y, Land, Objects)), 
-	(...)
+	Adicionalmente, se realizan checkeos para asegurar la consistencia en el recuerdo de los tesoros en cada posici\'on; \'esto se detallar\'a en la secci\'on ``Oro''.
 
-% primer caso: el agente recuerda que habia oro, y sigue estando
-processPosition(X, Y, Land, Objects):-
-	assert_once(map(X, Y, Land)),  % Guardamos el mapa
-	oro([X,Y],_),
-	member([treasure,_name,_data], Objects).
-	
-% segundo caso: el agente recuerda que habia oro,
-% pero alguien lo levanto!
-processPosition(X, Y, Land, Objects):-
-	assert_once(map(X, Y, Land)),  % Guardamos el mapa
-	oro([X,Y],_),
-	retract(oro([X,Y],_)).
-
-% tercer caso: no habia oro anteriormente.
-processPosition(X, Y, Land, Objects):-
-	assert_once(map(X, Y, Land)).  % Guardamos el mapa
-
-		\end{lstlisting}
-	
 	\subsection{Objetos}
 	
-	Los posibles objetos que se pueden encontrar en el recorrido del mapa son posadas, y oro. 
+	Los posibles objetos que se pueden encontrar en el recorrido del mapa son posadas y oro. Cada uno de ellos ser\'a recordado por el agente de un modo particular, y dicho recuerdo se utilizar\'a en las diferentes estrategias de acci\'on del agente.
 	
 		\subsubsection{Posadas}
 		
-		Cuando el agente encuentra una posada, recordar\'a su existencia manteniendo un predicado $posada([[X, Y] | P])$ conteniendo la lista de posadas conocidas, siendo $(X, Y)$ la posici\'on de la posada en $(Fila,Columna)$.
+		Cuando Bugor encuentre una posada, recordar\'a su existencia utilizando un hecho din\'amico $posada([X, Y])$, siendo $(X, Y)$ la posici\'on de la posada en $(Fila,Columna)$. Dado que las posadas se encuentran est\'aticas en el mapa, una vez que una de ellas es avistada, se recordar\'a siempre.
 		
 		\subsubsection{Oro}
 		
-		En caso de encontrar oro, el comportamiento del agente ser\'a el mismo pero en lugar de guardar una lista, se realizar\'an asserts y retracts del predicado $oro(X, Y, Turno)$ para el oro visto en la posici\'on $(X, Y)$ en el $Turno$ al que se lo vio, pues la posici\'on del oro es din\'amica y muy cambiante, e insertar y/o eliminar sucesivamente elementos de una lista resultar\'ia demasiado para este dato en particular. El turno se guarda junto con la posici\'on del oro, ya que a la hora de realizar una b\'usqueda de caminos minimales hacia oro conocido, se dar\'a prioridad al oro visto de forma m\'as reciente.
+		El oro es manejado delicadamente en la ``memoria'' del agente. Cada tesoro es recordado utilizando el predicado din\'amico \emph{oro(Name, Place, Turn)}, donde ``Name'' es el nombre del tesoro, ``Place'' indica d\'onde fue visto, y ``Turn'', el n\'umero de turno en el que se vi\'o por \'ultima vez. Es muy importante destacar que ``Place'' puede ser una lista [X, Y] (indicando las coordenadas en el mapa donde fue visto dicho tesoro), o bien puede ser el nombre del agente al que se haya visto levantando el tesoro. De esta manera, es sencillo inferir r\'apidamente qu\'e tesoros se encuentran tirados en el mapa, qu\'e tesoros puede tener cada uno de los agentes conocidos, y desde hace cu\'antos turnos que no se tiene informaci\'on actualizada de ellos; y por otro lado, utilizar el formato de representaci\'on mostrado tiene la ventaja de que permite realizar actualizaciones sencillas de los recuerdos de los tesoros sin importar si se encontraban tirados o estaban siendo cargados por alg\'un agente.
 		
-		Si bien el oro que se divise es muy probable que se recoja, estos datos se mantienen para oro que se encuentre en alguna posici\'on a la cual el agente no puede acceder, ya sea por falta de stamina, o por tener alg\'un obstaculo en el camino.
+		A continuaci\'on, describiremos brevemente las consideraciones realizadas para el manejo de la ``memoria'' de dichos tesoros.
 		
-		\subsubsection{C\'odigo}
+		El primer caso, y el m\'as trivial, es cuando Bugor ve oro en el mapa; este tesoro ``TX'' es recordado como \emph{oro(TX, PosicionActual, TurnoActual)}, y todos los recuerdos anteriores de dicho tesoro son eliminados.
 		
-		\begin{lstlisting}
-analize_things([Pos, Obj]):- 
-	(...)
-	Obj = [hostel, Name, Attrs],
-	posadas(P),
-	member(Pos, P),
-	(...)
-
-analize_things([Pos, Obj]):- 
-	(...)
-	Obj = [hostel, Name, Attrs],
-	posadas(P),
-	% Agrego la posada a la lista
-	replace(posadas(_), posadas([Pos | P])),
-	(...)
-
-analize_things([Pos, Obj]):- 
-	(...)
-	Obj = [treasure, Name, Attrs],
-	% Agrego el tesoro
-	turn(T), % Se guarda el turno en el que se vio
-	assert_once_oro(Pos, T),
-	(...)
-		\end{lstlisting}
-	
+		En cada turno, y por cada posici\'on en el rango de vista del agente, se realiza un checkeo para ver si el oro anteriormente recordado en dicha posici\'on contin\'ua estando en ese lugar; de ser as\'i, el recuerdo del oro se mantiene, \emph{pero se actualiza el turno en el que el oro fue visto por \'ultima vez}. Si, por el contrario, el tesoro ya no se encuentra en la posici\'on en la que se lo recordaba, es borrado de la ``memoria''. Recordemos que cada tesoro tiene un nombre propio, por lo que si se recordaba, por ejemplo, un tesoro t1 en la posici\'on [2,2], y en una nueva visita se encuentra un tesoro diferente en la misma posici\'on, el primer tesoro ser\'a igualmente borrado, y se agregar\'a a la ``memoria'' el nuevo tesoro avistado.
+		
+		Otro caso a considerar ocurre cuando se ve a un agente en el preciso momento en el que est\'a recogiendo un tesoro TX; dicho tesoro tambi\'en es recordado, pero en lugar de grabar una posici\'on como en los casos anteriores, se utiliza \emph{oro(TX, NombreDelAgente, TurnoActual)} (y se realizan otras acciones que se detallar\'an en la secci\'on de ``Interacci\'on con otros agentes''). La implementaci\'on utilizada para representar el oro permite reemplazar el ``recuerdo'' anterior sin importar si el tesoro estaba anteriormente en el piso o estaba siendo cargado por otro agente. Adem\'as, si se ve a un agente cualquiera tirar oro al suelo, inmediatamente se borra cualquier recuerdo que se tuviera de dicho oro, para pasar a recordar que el tesoro se encuentra ahora en el piso (y otras acciones respecto al agente, que tambi\'en se detallar\'an m\'as adelante).
+		
+		Por \'ultimo, cada vez que se ve a un agente inconsciente, se elimina el recuerdo de todas las piezas de oro que pose\'ia (y si dichas piezas est\'an en el rango visual de Bugor, ser\'an inmediatamente agregadas a la ``memoria'' con su nueva posici\'on).
+		
 	\subsection{Interacci\'on con otros agentes}
 	
-	En caso de encontrarse con otro agente, \'este ser\'a recordado en una lista de agentes. En caso de encontrarse con m\'as de un agente conocido, se establece una prioridad que ser\'a utilizada a la hora de decidir c\'omo actuar. La prioridad estar\'a dada por la informaci\'on que se infiera de cada agente; en particular, se trata con mayor prioridad a aquellos agentes que den alg\'un indicio de tener oro, ya que atacar a estos agentes puede resultar no solo en aumentar el fight\_skill, sino tambi\'en en aumentar la cantidad de tesoros en caso de dejarlo inconsciente.
+	En caso de encontrarse con otro agente, \'este ser\'a recordado en una lista de agentes. Si bien tambi\'en podr\'ia utilizarse un hecho din\'amico para representar la informaci\'on de cada agente, mantener una lista facilita algunas cuestiones de implementaci\'on.
 	
-	La lista de agentes contendr\'a elementos que estar\'an formados por el nombre del agente y cierta caracterizaci\'on de \'este; por ejemplo, si fue visto atacando a otro implicar\'ia que el agente es agresivo y puede poseer alto fight\_skill. Por otro lado, si el agente fue visto recogiendo oro se aumentar\'a la prioridad de \'este en la lista. 
+	Para cada uno de los agentes de la lista se mantiene cierta informaci\'on que ser\'a utilizada a la hora de definir el comportamiento de Bugor; naturalmente el nombre del agente, la cantidad de veces que fue visto atacando a otros, la cantidad de veces que fue visto recogiendo oro, y si existe cierta posibilidad de que el agente sea ``lento''. El hecho de que el agente haya sido visto atacando a otros implica que es agresivo, por lo que se evitar\'a a aquellos que tengan una cantidad numerosa de ataques realizados. Si bien esto no es una medida directa para medir el fight\_skill del rival (pues para eso ser\'ia necesario considerar los ataques que efectivamente produjeron daño), s\'i permite caracterizar el perfil del agente. La cantidad de oro que (se cree que) el rival est\'a cargando puede inferirse gracias a la representaci\'on del oro mencionada anteriormente, pero se opt\'o, a modo de desici\'on de diseño, por contar con el total para no necesitar recalcularlo permanentemente.
 	
-	Se considera, adem\'as, un caso especial para aquellos agentes que fueron vistos inm\'oviles, (previous\_turn\_action = none), a quienes denominamos ``lentos''. Puede que alg\'un agente piense demasiado y pierda un turno, lo cual puede significar cierta ventaja a la hora de atacarlo.
+	El balance de la cantidad de oro cargado por el agente se modifica en todos los mismos casos que se mencionaron anteriormente para el oro: se restar\'a 1 al valor para un agente si se encuentra un tesoro que se sab\'ia que estaba siendo cargado por \'el, o si se ve a otro agente levantar dicho tesoro del suelo; al ver a un agente levantar un tesoro, este valor aumenta; y si el agente se encuentra inconsciente, el valor vuelve a setearse a 0.
 	
-	Por otro lado, cuando un agente conocido es visto inconsciente, se llevan a cero el campo que indica cuanto oro puede que el agente tenga.
+	Dado el caso de que Bugor se encuentre con m\'as de un agente conocido, se establece una prioridad que ser\'a utilizada a la hora de decidir c\'omo actuar. La prioridad estar\'a dada por la informaci\'on que se infiera de cada agente; en particular, se trata con mayor prioridad a aquellos agentes que se recuerda que tienen oro, ya que atacar a estos agentes puede resultar no solo en aumentar el fight\_skill, sino tambi\'en en aumentar la cantidad de tesoros en caso de dejarlo inconsciente. Los agentes que son perfilados como ``agresivos'', por el contrario, disminuyen el valor de la funci\'on de prioridad.
 	
-	La lista de agentes contendr\'a elementos con la estructura \\
-	$agente(Nombre, VecesVistoAtacando, VecesVistoRecogiendoTesoros, EsLento)$.
-	
+	Se considera, adem\'as, un caso especial para aquellos agentes que fueron vistos inm\'oviles, (previous\_turn\_action = none), a quienes denominamos ``lentos''. El caso de que alg\'un agente piense durante demasiado tiempo y pierda un turno puede significar cierta ventaja a la hora de atacarlo. Es por esto que, si se presenta este caso, el valor de la funci\'on de prioridad autom\'aticamente se duplica, marcando grandes diferencias en agentes que tengan prioridades para ser atacados similares.		
+	Por \'ultimo destacamos que, si bien no se puede medir de manera directa la stamina de un agente rival, s\'i es posible estimar una cota superior	de acuerdo a la distancia la posada m\'as cercana conocida; \'esta estrategia resulta efectiva una vez que el juego se encuentra avanzado (no tiene sentido calcular la distancia del agente a la posada m\'as cercana en los primeros turnos, considerando que los agentes aparecen en posiciones aleatorias con su stamina llena, pero s\'i resulta en una buena estimaci\'on una vez que transcurrieron la suficiente cantidad de turnos como para que un agente se haya visto obligado a descansar en una posada, y se conozca una muy buena parte del mapa).
 % 	Otra cuesti\'on importante es determinar un cierto posicionamiento de los agentes en el mapa. A cada agente se le asignar\'a una zona del mapa, de esta forma, en caso de tener baja stamina o no tener fight\_skill alto, el agente priorizar\'a zonas donde no se hayan visto agentes agresivos. 
 % 	
 % 	Para asignar un agente a una zona, como los agentes se mueven a lo largo del mapa, se asumir\'a la pertenencia a una zona circular de 3 de radio. Si un agente est\'a a distancia Eucl\'idea menor a 3 del centro de una zona ya existente, pasar\'a a pertenecer a dicha zona. La existencias de zonas se ver\'a ligada a la asignaci\'on de al menos un agente a ella. Por ello, el mapa de zonas ser\'a din\'amico con respecto al recorrido del agente y su interacci\'on con el entorno.
-	
-	\subsubsection{C\'odigo}
-	
-	\begin{lstlisting}
-analize_things([Pos, Obj]):- 
-	(...)
-	Obj = [agent, Name, Attrs],
-	Name \= bugor, % Descartamos analizar este mismo agente
-	% Para todos los agentes: se lo recuerda
-	forall(member([AttrName, Value], Attrs), 
-		remember_agent(Name, [AttrName, Value])).
-
-% este caso es cuando bugor se ve a si mismo; simplemente se ignora
-analize_things([Pos, Obj]):- 
-	Obj = [agent, bugor, Attrs],
-	(...)
-
-remember_agent(Name, [previous_turn_action, attack(_)]):- 
-	(...)
-	agentes(A),
-	(...)
-	member(agente(Name, Attack, Picking, Slow), A),
-	(...)
-	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA),
-	NewAttack is Attack + 1,
-	replace(agentes(_), agentes(NewA)),
-	insert_agent(Name, NewAttack, Picking, Slow),
-	(...)
-
-% Si el predicado member falla, es decir, nunca vimos a este agente:
-remember_agent(Name, [previous_turn_action, attack(_)]):- 
-	(...)
-	agentes(A),
-	(...)
-	insert_agent(Name, 1, 0),
-	(...)
-
-% Analogamente para los tesoros recojidos
-remember_agent(Name, [previous_turn_action, pickup(_)]):- 
-	(...)
-	agentes(A),
-	(...)
-	member(agente(Name, Attack, Picking, Slow), A),
-	(...)
-	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA),
-	NewPick is Picking + 1,
-	replace(agentes(_), agentes(NewA)),
-	insert_agent(Name, Attack, NewPick, Slow),
-	(...)
-
-% Si el predicado member falla, es decir, nunca vimos a este agente:
-remember_agent(Name, [previous_turn_action, pickup(_)]):- 
-	(...)
-	insert_agent(Name, 0, 1, false),
-	(...)
-
-% Si el agente no hizo nada y ya lo conocemos
-remember_agent(Name, [previous_turn_action, none]):- 
-	(...)
-	agentes(A),
-	(...)
-	member(agente(Name, Attack, Picking, Slow), A),
-	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA),
-	replace(agentes(_), agentes(NewA)),
-	insert_agent(Name, Attack, Picking, true),
-	(...)
-
-% Si el agente no hizo nada y no lo conocimos
-remember_agent(Name, [previous_turn_action, none]):- 
-	(...)
-	insert_agent(Name, 0, 0, true),
-	(...)
-	
-% Si el agente esta inconsciente y ya lo conocemos
-remember_agent(Name, [unconscious, true]):-
-	agentes(A),
-	member(agente(Name, Attack, Picking, Slow), A),
-	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA),
-	replace(agentes(_), agentes(NewA)),
-	insert_agent(Name, Attack, 0, Slow).
-
-% Si el agente esta inconsciente y no lo conocemos
-remember_agent(Name, [unconscious, true]):-
-	insert_agent(Name, 0, 0, false).
-	
-remember_agent(Name, [Attr, Val]):- 
-	debug(warning, 'remember_agent: Case G: What the hell is this?'),
-	term_to_atom(Attr, A),
-	term_to_atom(Val, V),
-	concat(A, ' = ', Str),
-	concat(Str, V, Str2),
-	debug(warning, Str2).
-
-% Inserta a un agente en la lista
-% Caso especial: 
-%	- Cuando el agente tiene como previous_turn_action = none 
-%     trata de agregar al agente con 0,0, por eso se checkea 
-%     not(member(agente(Name, _, _)
-insert_agent(Name, Attack, Picking, Slow):- 
-	agentes(A), 
-	not(member(agente(Name, _, _, _), A)), 
-	replace(agentes(_), 
-	agentes([agente(Name, Attack, Picking, Slow) | A])).
-
-% Caso especial que el agente ya este insertado, no se hace nada.
-% Es decir, el not(memeber()) falla
-insert_agent(Name, Attack, Picking, Slow).
-	\end{lstlisting}
-	
-	Si bien la lista de agentes se dice ordenada por prioridad, mantener dicha lista ordenada no ser\'ia de real ayuda a la hora de decidir un comportamiento frente a alg\'un grupo de agentes. En realidad se cuenta con un predicado llamado $agent\_priority$ que dado un agente devuelve un n\'umero entero entre $0$ y $200$, siendo $0$ la menor prioridad y $200$ la mayor.
-	
-	Como se puede ver en la implementaci\'on del predicado, la funci\'on usada es arbitraria en cuanto a las operaciones utilizadas, pero bajo la \'unica condici\'on que se mantenga normalizada entre las cotas estipuladas para realizar una comparaci\'on justa entre agentes. Se puede ver claramente c\'omo a los a los agentes ``lentos'' se les da mas prioridad simplemente duplicando la prioridad ``neta'' del agente.
-	
-	\begin{lstlisting}
-agent_priority(agente(_Name, Attack, Pick, false), Priority):-
-	Total is Pick + Attack,
-	Priority is Pick * 100 / Total.
-
-agent_priority(agente(_Name, Attack, Pick, true), Priority):-
-	Total is Pick + Attack,
-	Temp is Pick * 100 / Total,
-	Priority is Temp * 2.
-	\end{lstlisting}
-
 	
 \end{document}
