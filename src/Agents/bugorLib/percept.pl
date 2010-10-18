@@ -173,13 +173,19 @@ remember_agent(Name, _, [unconscious, true]):-
 remember_agent(Name, _, [unconscious, true]):-
 	insert_agent(Name, 0, 0, false).
 
-remember_agent(_, _, [Attr, Val]):-
+% Si se vio al agente en otra situacion, como por ej [previous_turn_action,
+% move_fwd]
+remember_agent(Name, _, [_, _]):-
+	insert_agent(Name, 0, 0, false).
+
+% Para casos que no queremos considerar y que no falle el predicado
+remember_agent(_, _, [Attr, Val]).
 %     debug(warning, 'remember_agent: Case G: What the hell is this?'),
-	term_to_atom(Attr, A),
-	term_to_atom(Val, V),
-	concat(A, ' = ', Str),
-	concat(Str, V, Str2),
-	debug(warning, Str2).
+%     term_to_atom(Attr, A),
+%     term_to_atom(Val, V),
+%     concat(A, ' = ', Str),
+%     concat(Str, V, Str2),
+%     debug(warning, Str2).
 
 % Inserta a un agente en la lista
 % Caso especial:
