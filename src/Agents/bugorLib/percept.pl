@@ -179,7 +179,7 @@ remember_agent(Name, _, [_, _]):-
 	insert_agent(Name, 0, 0, false).
 
 % Para casos que no queremos considerar y que no falle el predicado
-remember_agent(_, _, [Attr, Val]).
+remember_agent(_, _, [_Attr, _Val]).
 %     debug(warning, 'remember_agent: Case G: What the hell is this?'),
 %     term_to_atom(Attr, A),
 %     term_to_atom(Val, V),
