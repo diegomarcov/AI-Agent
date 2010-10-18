@@ -5,7 +5,6 @@ explore_strat(move_fwd):-
 	(map(NX, NY, plain); map(NX, NY, mountain)).
 
 explore_strat(turn(Turn)):-
-	current_pos(Pos),
 	direction(Dir),
 	random(0, 2, Num),
 	next_random(Num, Dir, Turn).

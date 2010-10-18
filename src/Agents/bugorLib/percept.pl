@@ -3,13 +3,8 @@
 update_state([Turn, Vision, _Attr, _Inventory]):-
 	save_turn(Turn),
 	save_map(Vision).
-
-% primer caso: recuerdo que habia oro, y sigue estando
-% Actualizo el turno en el que se lo vio.
-processPosition(X, Y, Land, Objects):-
-	assert_once(map(X, Y, Land)).  % Guardamos el mapa
 	
-% segundo caso: recuerdo que habia oro, pero alguien lo levanto!
+% recuerdo que habia oro, pero alguien lo levanto!
 processPosition(X, Y, Land, Objects):-
 	assert_once(map(X, Y, Land)),  % Guardamos el mapa
 	oro(Name, [X,Y], _),
@@ -18,7 +13,7 @@ processPosition(X, Y, Land, Objects):-
 
 % tercer caso: no recuerdo que haya habido oro anteriormente,
 % asi que unicamente guardo el mapa.
-processPosition(X, Y, Land, Objects):-
+processPosition(X, Y, Land, _Objects):-
 	assert_once(map(X, Y, Land)).  % Guardamos el mapa
 	
 % Mapa %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -58,6 +53,13 @@ analize_things([Pos, Obj]):-
 
 % NOTA: Los tesoros tienen como atributo el valor
 % pero parece ser siempre 100.
+analize_things([[X, Y], Obj]):-
+	Obj = [treasure, Name, _Attrs],
+	% Agrego el tesoro
+	turn(T), % Se guarda el turno en el que se vio
+	not(oro(Name, [X, Y], _)), % Nunca vimos este tesoro
+	assert_once_oro(Name, [X, Y], T).
+
 analize_things([[X, Y], Obj]):-
 	Obj = [treasure, Name, _Attrs],
 	% Agrego el tesoro
@@ -110,7 +112,6 @@ remember_agent(Name, _, [previous_turn_action, attack(_)]):-
 
 % Si el predicado member falla, es decir, nunca vimos a este agente:
 remember_agent(Name, _, [previous_turn_action, attack(_)]):-
-	agentes(A),
 	insert_agent(Name, 1, 0).
 
 % Analogamente para los tesoros recojidos
@@ -137,14 +138,12 @@ remember_agent(Name, Pos, [previous_turn_action, drop(TName)]):-
 
 % Si el predicado member falla, es decir, nunca vimos a este agente:
 remember_agent(Name, _, [previous_turn_action, pickup(TName)]):-
-	agentes(A),
 	turn(T),
 	replace(oro(TName, _, _), oro(TName, Name, T)),
 	insert_agent(Name, 0, 1, false).
 
 % Si el predicado member falla, es decir, nunca vimos a este agente:
 remember_agent(Name, Pos, [previous_turn_action, drop(TName)]):-
-	agentes(A),
 	turn(T),
 	replace(oro(TName, _, _), oro(TName, Pos, T)),
 	insert_agent(Name, 0, 0, false).
@@ -174,13 +173,13 @@ remember_agent(Name, _, [unconscious, true]):-
 remember_agent(Name, _, [unconscious, true]):-
 	insert_agent(Name, 0, 0, false).
 
-remember_agent(_, _, [Attr, Val]):- true.
+remember_agent(_, _, [Attr, Val]):-
 %     debug(warning, 'remember_agent: Case G: What the hell is this?'),
-%     term_to_atom(Attr, A),
-%     term_to_atom(Val, V),
-%     concat(A, ' = ', Str),
-%     concat(Str, V, Str2),
-%     debug(warning, Str2).
+	term_to_atom(Attr, A),
+	term_to_atom(Val, V),
+	concat(A, ' = ', Str),
+	concat(Str, V, Str2),
+	debug(warning, Str2).
 
 % Inserta a un agente en la lista
 % Caso especial:
