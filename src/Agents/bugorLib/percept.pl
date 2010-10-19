@@ -35,9 +35,9 @@ save_map(Vision):-
 	agentes(A),
 	debug_term(info, 'Known agents: ', A),
 	direction(D),
-	current_pos(P),
+	current_pos(CPos),
 	debug_term(info, 'Current direction: ', D),
-	debug_term(info, 'Current position: ', P).
+	debug_term(info, 'Current position: ', CPos).
 
 % Analiza un elemento visto
 % Si es oro o posada, recuerdo
