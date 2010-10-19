@@ -40,6 +40,10 @@ showstringspaces=false}
 	Adem\'as, se aclara que actualmente el movimiento del agente es aleatorio; es decir, no realiza ning\'un tipo de consideraciones para moverse, simplemente se genera un n\'umero al azar y de acuerdo a \'este el agente decide si gira o avanza.
 
 \section{Percepciones}
+	\subsection{Conocimiento propio}
+	
+	El agente ser\'a ``consciente'' de su posici\'on en la que est\'a y de la direcci\'on en la que est\'a mirando. Para ello se utilizan los predicados din\'amicos \emph{current\_pos([Fila, Columna])} y \emph{direction(D)}, con D pudiendo instanciarse como n, s, e, w. Cada vez que se actualiza la percepci\'on del agente se actualizan estos dos predicados a los valores actuales observados.
+	
 	\subsection{Turno}
 	
 	Dado que el estado del agente es una propiedad que var\'ia a medida que los turnos van pasando, se almacenar\'a el n\'umero de turno actual utilizando el predicado din\'amico \emph{Turn(T)}. Al comienzo de cada turno se elimina el valor almacenado anteriormente, y se guarda el n\'umero de turno nuevo. \'Esto permitir\'a diferenciar estrategias que el agente persigue al comienzo del juego de aquellas decisiones que se toman cuando el juego est\'e m\'as avanzado. A modo de ejemplo (que actualmente no es funcional), puede considerarse que los primeros treinta turnos de juego el agente se dedicar\'a a explorar el mapa; hasta el turno 150, posteriormente, se dedicar\'a a recoger oro; y a continuaci\'on, hasta el final del juego, buscar\'a agentes para intentar atacarlos y robar sus tesoros.

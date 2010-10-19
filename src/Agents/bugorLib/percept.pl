@@ -33,7 +33,11 @@ save_map(Vision):-
 	findall([Name, Pos, T], oro(Name, Pos, T), O),
 	debug_term(info, 'Known treasures: ', O),
 	agentes(A),
-	debug_term(info, 'Known agents: ', A).
+	debug_term(info, 'Known agents: ', A),
+	direction(D),
+	current_pos(P),
+	debug_term(info, 'Current direction: ', D),
+	debug_term(info, 'Current position: ', P).
 
 % Analiza un elemento visto
 % Si es oro o posada, recuerdo
