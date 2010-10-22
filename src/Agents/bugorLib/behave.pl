@@ -24,15 +24,9 @@ decide_action(Action):-
 	assert(meta([NX, NY])),
 	debug_term(warning, 'Meta: ', meta([NX, NY])),
 	debug_term(warning, 'Pos: ', [X, Y]),
-	search([node([X, Y], 0, [])], Path, Cost),
-%   debug_term(warning, 'HASTAACA', Path),
-	reverse(Path, [], RPath),
-	translateAll(RPath, D),
-	planning_stack(Acs),
-	reverse(Acs, [], NAcs),
-	replace(planning_stack(Acs), planning_stack(NAcs)),
-	debug_term(error, 'Path: ', Path),
-	debug_term(error, 'Actions: ', NAcs),
+%   debug_term(error, 'Path: ', Path),
+%   debug_term(error, 'Actions: ', NAcs),
+	justdoit([node([X, Y], 0, [])], _,_),
 	read(_),
 	current_action(Action),
 	pop_action.
@@ -42,3 +36,11 @@ decide_action(Action):-
 	current_strategy(explore),
 	current_action(Action),
 	pop_action.
+
+justdoit(Init, RPath, Cost):-
+	search(Init, Path, Cost),
+	reverse(Path, [], RPath),
+	translateAll(RPath, D),
+	planning_stack(Acs),
+	reverse(Acs, [], NAcs),
+	replace(planning_stack(Acs), planning_stack(NAcs)).
