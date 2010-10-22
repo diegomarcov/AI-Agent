@@ -11,7 +11,7 @@ h([X1, Y1], [X2, Y2], H):-
 	abs(Y, NY),
 	H is NX + NY.
 
-f(node(Pos, Cost, _), F):-
+f(node(Pos, Cost, _, _), F):-
 	meta(Meta),
 	h(Pos, Meta, H),
 	F is Cost + H.
@@ -25,9 +25,9 @@ quicksort([X|[]],[X]).
 quicksort([X|Xs],L):-pivotear(X,Xs,M,N),quicksort(M,Ms),quicksort(N,Ns),concat2(Ms,[X],Ls),concat2(Ls,Ns,L).
 
 % Si existe vecino conocido al norte
-get_n(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
+get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir)|NN]):-
 	NewF is F - 1,
-	direction(n),
+	Dir = n,
 	(
 		(
 			NewCost is Cost + 2,
@@ -38,7 +38,7 @@ get_n(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost
 		)
 	).
 
-get_n(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
+get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], n)|NN]):-
 	NewF is F - 1,
 	(
 		(
@@ -50,11 +50,11 @@ get_n(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost
 		)
 	).
 
-get_n(node([_F, _C], _Path, _Cost), NN, NN).
+get_n(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
-get_s(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
+get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir)|NN]):-
 	NewF is F + 1,
-	direction(s),
+	Dir = s,
 	(
 		(
 			NewCost is Cost + 2, % un move_fwd
@@ -65,7 +65,7 @@ get_s(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost
 		)
 	).
 
-get_s(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
+get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], s)|NN]):-
 	NewF is F + 1,
 	(
 		(
@@ -77,11 +77,11 @@ get_s(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost
 		)
 	).
 
-get_s(node([_F, _C], _Path, _Cost), NN, NN).
+get_s(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
-get_w(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
+get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir)|NN]):-
 	NewC is C - 1,
-	direction(w),
+	Dir = w,
 	(
 		(
 			NewCost is Cost + 2, % un move_fwd
@@ -92,7 +92,7 @@ get_w(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost
 		)
 	).
 
-get_w(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
+get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], w)|NN]):-
 	NewC is C - 1,
 	(
 		(
@@ -104,11 +104,11 @@ get_w(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost
 		)
 	).
 
-get_w(node([_F, _C], _Path, _Cost), NN, NN).
+get_w(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
-get_e(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
+get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir)|NN]):-
 	NewC is C + 1,
-	direction(e),
+	Dir = e,
 	(
 		(
 			NewCost is Cost + 2, % un move_fwd
@@ -119,7 +119,7 @@ get_e(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost
 		)
 	).
 
-get_e(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
+get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], e)|NN]):-
 	NewC is C + 1,
 	(
 		(
@@ -131,7 +131,7 @@ get_e(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost
 		)
 	).
 
-get_e(node([_F, _C], _Path, _Cost), NN, NN).
+get_e(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
 select(Node, [Node|Frontier], Frontier).
 
@@ -147,7 +147,7 @@ neighbors(Node, Neighbors):-
 
 search(F0, [Node|Path], Cost):-
 	select(Node, F0, _F1),
-	Node = node(Pos, Cost, Path),
+	Node = node(Pos, Cost, Path, _),
 	meta(Pos).
 
 search(F0, Path, Cost):-
@@ -157,9 +157,9 @@ search(F0, Path, Cost):-
 	search(F2, Path, Cost).
 
 %translate(From, To, Action):-
-translate(node([X1, Y1], _, _), node([X1, Y1], _, _), none, _).
+translate(node([X1, Y1], _, _, _), node([X1, Y1], _, _, _), none, _).
 
-translate(node([X1, Y1], _, _), node([X2, Y2], _, _), move_fwd, Dir):-
+translate(node([X1, Y1], _, _, _), node([X2, Y2], _, _, _), move_fwd, Dir):-
 	(
 		X2 is X1 - 1,
 		Dir = n
@@ -174,22 +174,22 @@ translate(node([X1, Y1], _, _), node([X2, Y2], _, _), move_fwd, Dir):-
 		Dir = w
 	).
 
-translate(node([X1, Y1], _, _), node([X2, Y2], _, _), turn(D), Dir):-
+translate(node([X1, Y1], _, _, _), node([X2, Y2], _, _, _), turn(D), Dir):-
 	X2 is X1 - 1,
 	Dir \= n,
 	D = n.
 
-translate(node([X1, Y1], _, _), node([X2, Y2], _, _), turn(D), Dir):-
+translate(node([X1, Y1], _, _, _), node([X2, Y2], _, _, _), turn(D), Dir):-
 	X2 is X1 + 1,
 	Dir \= s,
 	D = s.
 
-translate(node([X1, Y1], _, _), node([X2, Y2], _, _), turn(D), Dir):-
+translate(node([X1, Y1], _, _, _), node([X2, Y2], _, _, _), turn(D), Dir):-
 	Y2 is Y1 + 1,
 	Dir \= e,
 	D = e.
 
-translate(node([X1, Y1], _, _), node([X2, Y2], _, _), turn(D), Dir):-
+translate(node([X1, Y1], _, _, _), node([X2, Y2], _, _, _), turn(D), Dir):-
 	Y2 is Y1 - 1,
 	Dir \= w,
 	D = w.
