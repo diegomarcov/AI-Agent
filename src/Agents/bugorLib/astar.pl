@@ -1,5 +1,3 @@
-:- dynamic meta/1.
-
 concat2(X,[],X).
 concat2([],Y,Y).
 concat2([X|Xs],Y,[X|L]):- concat2(Xs,Y,L).
@@ -85,40 +83,21 @@ select(Node, [Node|Frontier], Frontier).
 
 add_to_frontier(Neighbors, Frontier1, Frontier3):-
 	append(Frontier1, Neighbors, Frontier2),
-	debug_term(error, 'Neight ', Neighbors),
-	debug_term(error, 'Frontier1 ', Frontier1),
-	debug_term(error, 'Frontier2 ', Frontier2),
-	quicksort(Frontier2, Frontier3),
-	debug_term(error, 'Frontier3 ', Frontier3).
+	quicksort(Frontier2, Frontier3).
 
-neighb0rs(Node, Neighbors):-
+neighbors(Node, Neighbors):-
 	get_n(Node, [], N1),
 	get_s(Node, N1, N2),
 	get_w(Node, N2, N3),
 	get_e(Node, N3, Neighbors).
 
-search(F0):-
+search(F0, [Node|Path], Cost):-
 	select(Node, F0, _F1),
 	Node = node(Pos, Cost, Path),
-	meta(Pos),
-	write('CAMINOOOOOOO'),nl,
-	write(Pos), nl,
-	write(Cost), nl,
-	write(Path), nl.
+	meta(Pos).
 
-search(F0):-
+search(F0, Path, Cost):-
 	select(Node, F0, F1),
-	debug_term(warning, 'Selecting node ', Node),
-	read(_),
-	debug(warning, '************************* '),
-	neighb0rs(Node, NN),
-	debug_term(warning, 'Neighbors ', NN),
-	read(_),
-	debug(warning, '////////////////// '),
-	add_to_frontier(NN, F1, F2).
-%     debug(warning, '(((((((((((((((((((( '),
-%     debug_term(warning, 'New frontier ', F2),
-%     read(_),
-%     debug(warning, '########################## '),
-%     search(F2),
-%     debug(warning, 'UUUUUUUUUUUUUUUUUUUUUUUUU').
+	neighbors(Node, NN),
+	add_to_frontier(NN, F1, F2),
+	search(F2, Path, Cost).
