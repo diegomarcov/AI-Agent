@@ -33,6 +33,7 @@ turn(0).
 agentes([]).
 % strategy_stack([initial]).
 strategy_stack([explore]).
+planning_stack([]).
 
 run:-
 	get_percept(Perc),
