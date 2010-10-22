@@ -103,46 +103,64 @@ search(F0, Path, Cost):-
 	search(F2, Path, Cost).
 
 %translate(From, To, Action):-
-translate(node([X1, Y1], _, _), node([X1, Y1], _, _), none).
+translate(node([X1, Y1], _, _), node([X1, Y1], _, _), none, _).
 
-translate(node([X1, Y1], _, _), node([X2, Y2], _, _), move_fwd):-
+translate(node([X1, Y1], _, _), node([X2, Y2], _, _), move_fwd, Dir):-
 	(
-		X2 is X1 + 1,
-		direction(n)
-	) ; (
 		X2 is X1 - 1,
-		direction(s)
+		Dir = n
+	) ; (
+		X2 is X1 + 1,
+		Dir = s
 	) ; (
 		Y2 is Y1 + 1,
-		direction(e)
+		Dir = e
 	) ; (
 		Y2 is Y1 - 1,
-		direction(w)
+		Dir = w
 	).
 
-translate(node([X1, Y1], _, _), node([X2, Y2], _, _), turn(D)):-
-	(
-		X2 is X1 + 1,
-		not(direction(n)),
-		D = n
-	) ; (
-		X2 is X1 - 1,
-		not(direction(s)),
-		D = s
-	) ; (
-		Y2 is Y1 + 1,
-		not(direction(e)),
-		D = e
-	) ; (
-		Y2 is Y1 - 1,
-		not(direction(w)),
-		D = w
-	).
+translate(node([X1, Y1], _, _), node([X2, Y2], _, _), turn(D), Dir):-
+	X2 is X1 - 1,
+	Dir \= n,
+	D = n.
 
-translateAll([X|Xs]):-
+translate(node([X1, Y1], _, _), node([X2, Y2], _, _), turn(D), Dir):-
+	X2 is X1 + 1,
+	Dir \= s,
+	D = s.
+
+translate(node([X1, Y1], _, _), node([X2, Y2], _, _), turn(D), Dir):-
+	Y2 is Y1 + 1,
+	Dir \= e,
+	D = e.
+
+translate(node([X1, Y1], _, _), node([X2, Y2], _, _), turn(D), Dir):-
+	Y2 is Y1 - 1,
+	Dir \= w,
+	D = w.
+
+translateAll([X|Xs], D):-
 	Xs = [X2|Xs2],
-	translate(X, X2, Ac),
-	push_action(Ac),
-	translateAll(Xs).
+	translate(X, X2, move_fwd, D),
+	push_action(move_fwd),
+	translateAll(Xs, D).
 
-translateAll([]).
+translateAll([X|Xs], D):-
+	Xs = [X2|Xs2],
+	translate(X, X2, turn(ND), D),
+	push_action(turn(ND)),
+	translateAll([X|Xs], ND).
+
+translateAll([_], _).
+translateAll([], _).
+
+%node([5,9],7,),
+%node([5,8],5,),
+%node([6,8],4,),
+%node([7,8],3,),
+%node([7,7],1,),
+%node([8,7],0,[])]
+
+%move_fwd, turn(e), move_fwd, turn(n), move_fwd, move_fwd, turn(e), move_fwd
+

@@ -18,18 +18,24 @@ decide_action(Action):-
 	current_strategy(explore),
 	planning_stack([]),
 	current_pos([X, Y]),
+	direction(D),
 	NX is X - 3,
 	NY is Y + 2,
 	assert(meta([NX, NY])),
 	debug_term(warning, 'Meta: ', meta([NX, NY])),
 	debug_term(warning, 'Pos: ', [X, Y]),
 	search([node([X, Y], 0, [])], Path, Cost),
-	translateAll(Path),
-	debug_term(error, 'Path: ', Path),
+%   debug_term(warning, 'HASTAACA', Path),
+	reverse(Path, [], RPath),
+	translateAll(RPath, D),
 	planning_stack(Acs),
-	debug_term(error, 'Actions: ', Acs),
+	reverse(Acs, [], NAcs),
+	replace(planning_stack(Acs), planning_stack(NAcs)),
+	debug_term(error, 'Path: ', Path),
+	debug_term(error, 'Actions: ', NAcs),
 	read(_),
-	current_action(Action).
+	current_action(Action),
+	pop_action.
 %   explore_strat(Action).
 
 decide_action(Action):-
