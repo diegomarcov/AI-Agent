@@ -31,8 +31,7 @@
 % init de los predicados dinamicos
 turn(0).
 agentes([]).
-% strategy_stack([initial]).
-strategy_stack([explore]).
+strategy_stack([]).
 planning_stack([]).
 
 run:-
@@ -43,6 +42,7 @@ run:-
 	% display_ag(AgName, Perc), nl,
 	% agregado esto para que el agente actue en modo joystick
 	% write('ACCION?: '), read(Action),
+	decide_strategy,
 	decide_action(Action),
 	do_action(Action),
 	run.
