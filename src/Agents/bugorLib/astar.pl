@@ -28,54 +28,108 @@ quicksort([X|Xs],L):-pivotear(X,Xs,M,N),quicksort(M,Ms),quicksort(N,Ns),concat2(
 get_n(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
 	NewF is F - 1,
 	direction(n),
-	NewCost is Cost + 1, % un move_fwd
-	(map(NewF, C, mountain); map(NewF, C, plain)).
+	(
+		(
+			NewCost is Cost + 2,
+			map(NewF, C, mountain)
+		) ; (
+			NewCost is Cost + 1,
+			map(NewF, C, plain)
+		)
+	).
 
 get_n(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
 	NewF is F - 1,
-	not(direction(n)),
-	NewCost is Cost + 2, % un turn(dondesea) + move_fwd
-	(map(NewF, C, mountain); map(NewF, C, plain)).
+	(
+		(
+			NewCost is Cost + 3, % un turn(dondesea) + move_fwd
+			map(NewF, C, mountain)
+		) ; (
+			NewCost is Cost + 2, % un turn(dondesea) + move_fwd
+			map(NewF, C, plain)
+		)
+	).
 
 get_n(node([_F, _C], _Path, _Cost), NN, NN).
 
 get_s(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
 	NewF is F + 1,
 	direction(s),
-	NewCost is Cost + 1, % un move_fwd
-	(map(NewF, C, mountain); map(NewF, C, plain)).
+	(
+		(
+			NewCost is Cost + 2, % un move_fwd
+			map(NewF, C, mountain)
+		) ; (
+			NewCost is Cost + 1, % un move_fwd
+			map(NewF, C, plain)
+		)
+	).
 
 get_s(node([F, C], Cost, Path), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
 	NewF is F + 1,
-	NewCost is Cost + 2,
-	(map(NewF, C, mountain); map(NewF, C, plain)).
+	(
+		(
+			NewCost is Cost + 3,
+			map(NewF, C, mountain)
+		) ; (
+			NewCost is Cost + 2,
+			map(NewF, C, plain)
+		)
+	).
 
 get_s(node([_F, _C], _Path, _Cost), NN, NN).
 
 get_w(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
 	NewC is C - 1,
 	direction(w),
-	NewCost is Cost + 1, % un move_fwd
-	(map(F, NewC, mountain); map(F, NewC, plain)).
+	(
+		(
+			NewCost is Cost + 2, % un move_fwd
+			map(F, NewC, mountain)
+		) ; (
+			NewCost is Cost + 1, % un move_fwd
+			map(F, NewC, plain)
+		)
+	).
 
 get_w(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
 	NewC is C - 1,
-	not(direction(w)),
-	NewCost is Cost + 2,
-	(map(F, NewC, mountain); map(F, NewC, plain)).
+	(
+		(
+			NewCost is Cost + 3,
+			map(F, NewC, mountain)
+		) ; (
+			NewCost is Cost + 2,
+			map(F, NewC, plain)
+		)
+	).
 
 get_w(node([_F, _C], _Path, _Cost), NN, NN).
 
 get_e(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
 	NewC is C + 1,
 	direction(e),
-	NewCost is Cost + 1, % un move_fwd
-	(map(F, NewC, mountain); map(F, NewC, plain)).
+	(
+		(
+			NewCost is Cost + 2, % un move_fwd
+			map(F, NewC, mountain)
+		) ; (
+			NewCost is Cost + 1, % un move_fwd
+			map(F, NewC, plain)
+		)
+	).
 
 get_e(node([F, C], Cost, Path), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path)|Path])|NN]):-
 	NewC is C + 1,
-	NewCost is Cost + 2,
-	(map(F, NewC, mountain); map(F, NewC, plain)).
+	(
+		(
+			NewCost is Cost + 3,
+			map(F, NewC, mountain)
+		) ; (
+			NewCost is Cost + 2,
+			map(F, NewC, plain)
+		)
+	).
 
 get_e(node([_F, _C], _Path, _Cost), NN, NN).
 
@@ -154,13 +208,3 @@ translateAll([X|Xs], D):-
 
 translateAll([_], _).
 translateAll([], _).
-
-%node([5,9],7,),
-%node([5,8],5,),
-%node([6,8],4,),
-%node([7,8],3,),
-%node([7,7],1,),
-%node([8,7],0,[])]
-
-%move_fwd, turn(e), move_fwd, turn(n), move_fwd, move_fwd, turn(e), move_fwd
-
