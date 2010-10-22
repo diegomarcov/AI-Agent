@@ -22,21 +22,22 @@ push_action(Action):- planning_stack(X), replace(planning_stack(X), planning_sta
 decide_action(Action):- 
 	current_strategy(explore),
 	planning_stack([]),
-%   current_pos([X, Y]),
-%   NX is X - 3,
-%   NY is Y + 2,
-%   assert(meta([NX, NY])),
-%   debug_term(warning, 'Meta: ', meta([NX, NY])),
-%   debug_term(warning, 'Pos: ', [X, Y]),
-%   debug_term(error, 'Path: ', Path),
-%   debug_term(error, 'Actions: ', NAcs),
-%   justdoit([node([X, Y], 0, [])], _,_),
-%   read(_),
-%   current_action(Action),
-%   pop_action.
-	explore_strat(Action).
+	current_pos([X, Y]),
+	direction(D),
+	NX is X - 3,
+	NY is Y + 2,
+	assert(meta([NX, NY])),
+	debug_term(warning, 'Meta: ', meta([NX, NY])),
+	debug_term(warning, 'Pos: ', [X, Y]),
+	%trace, 
+	justdoit([node([X, Y], 0, [], D)], _,_),
+	read(_),
+	current_action(Action),
+	pop_action.
+%   explore_strat(Action).
 
 decide_action(Action):-
+%   debug(warning, 'A CIEGAS'),
 	current_strategy(explore),
 	current_action(Action),
 	pop_action.
@@ -52,6 +53,8 @@ justdoit(Init, RPath, Cost):-
 	translateAll(RPath, D),
 	planning_stack(Acs),
 	reverse(Acs, [], NAcs),
+	debug_term(error, 'Path: ', Path),
+	debug_term(error, 'Actions: ', NAcs),
 	replace(planning_stack(Acs), planning_stack(NAcs)).
 
 decide_strategy:-
