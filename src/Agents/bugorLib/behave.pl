@@ -22,19 +22,18 @@ push_action(Action):- planning_stack(X), replace(planning_stack(X), planning_sta
 decide_action(Action):- 
 	current_strategy(explore),
 	planning_stack([]),
-	current_pos([X, Y]),
-	direction(D),
-	NX is X - 3,
-	NY is Y + 2,
-	assert(meta([NX, NY])),
-	debug_term(warning, 'Meta: ', meta([NX, NY])),
-	debug_term(warning, 'Pos: ', [X, Y]),
-	%trace, 
-	justdoit([node([X, Y], 0, [], D)], _,_),
-	read(_),
-	current_action(Action),
-	pop_action.
-%   explore_strat(Action).
+%   current_pos([X, Y]),
+%   direction(D),
+%   NX is X - 3,
+%   NY is Y + 2,
+%   assert(meta([NX, NY])),
+%   debug_term(warning, 'Meta: ', meta([NX, NY])),
+%   debug_term(warning, 'Pos: ', [X, Y]),
+%   justdoit([node([X, Y], 0, [], D)], _,_),
+%   read(_),
+%   current_action(Action),
+%   pop_action.
+	explore_strat(Action).
 
 decide_action(Action):-
 %   debug(warning, 'A CIEGAS'),
@@ -47,7 +46,10 @@ decide_action(Action):-
 	treasures_strat(Action).
 
 justdoit(Init, RPath, Cost):-
+	debug(error, 'Antes del search'),
+%   trace,
 	search(Init, Path, Cost),
+	debug(error, 'Despues del search'),
 	reverse(Path, [], RPath),
 	direction(D),
 	translateAll(RPath, D),

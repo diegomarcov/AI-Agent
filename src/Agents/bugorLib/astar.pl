@@ -1,3 +1,5 @@
+:- dynamic visitado/1.
+
 concat2(X,[],X).
 concat2([],Y,Y).
 concat2([X|Xs],Y,[X|L]):- concat2(Xs,Y,L).
@@ -36,7 +38,9 @@ get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			NewCost is Cost + 1,
 			map(NewF, C, plain)
 		)
-	).
+	),
+	visitado(node([NewF, C], Cost2, _, _)),
+	NewCost < Cost2.
 
 get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], n)|NN]):-
 	NewF is F - 1,
@@ -48,7 +52,9 @@ get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			NewCost is Cost + 2, % un turn(dondesea) + move_fwd
 			map(NewF, C, plain)
 		)
-	).
+	),
+	visitado(node([NewF, C], Cost2, _, _)),
+	NewCost < Cost2.
 
 get_n(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
@@ -63,7 +69,9 @@ get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			NewCost is Cost + 1, % un move_fwd
 			map(NewF, C, plain)
 		)
-	).
+	),
+	visitado(node([NewF, C], Cost2, _, _)),
+	NewCost < Cost2.
 
 get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], s)|NN]):-
 	NewF is F + 1,
@@ -75,7 +83,9 @@ get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			NewCost is Cost + 2,
 			map(NewF, C, plain)
 		)
-	).
+	),
+	visitado(node([NewF, C], Cost2, _, _)),
+	NewCost < Cost2.
 
 get_s(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
@@ -90,7 +100,9 @@ get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			NewCost is Cost + 1, % un move_fwd
 			map(F, NewC, plain)
 		)
-	).
+	),
+	visitado(node([F, NewC], Cost2, _, _)),
+	NewCost < Cost2.
 
 get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], w)|NN]):-
 	NewC is C - 1,
@@ -102,7 +114,9 @@ get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			NewCost is Cost + 2,
 			map(F, NewC, plain)
 		)
-	).
+	),
+	visitado(node([F, NewC], Cost2, _, _)),
+	NewCost < Cost2.
 
 get_w(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
@@ -117,7 +131,9 @@ get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			NewCost is Cost + 1, % un move_fwd
 			map(F, NewC, plain)
 		)
-	).
+	),
+	visitado(node([F, NewC], Cost2, _, _)),
+	NewCost < Cost2.
 
 get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], e)|NN]):-
 	NewC is C + 1,
@@ -129,7 +145,9 @@ get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			NewCost is Cost + 2,
 			map(F, NewC, plain)
 		)
-	).
+	),
+	visitado(node([F, NewC], Cost2, _, _)),
+	NewCost < Cost2.
 
 get_e(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
@@ -152,6 +170,24 @@ search(F0, [Node|Path], Cost):-
 
 search(F0, Path, Cost):-
 	select(Node, F0, F1),
+	Node = node([F, C], Cost, Path, Dir),
+	visitado(node([F, C], Cost2, _, _)),
+	Cost < Cost2,
+	replace(visitado(node([F, C], Cost2, _, _)), visitado(Node)),
+	neighbors(Node, NN),
+	add_to_frontier(NN, F1, F2),
+	search(F2, Path, Cost).
+
+search(F0, Path, Cost):-
+	select(Node, F0, F1),
+	Node = node([F, C], Cost, _, _),
+	visitado(node([F, C], Cost2, _, _)),
+	Cost >= Cost2,
+	fail.
+
+search(F0, Path, Cost):-
+	select(Node, F0, F1),
+	assert_once(visitado(Node)),
 	neighbors(Node, NN),
 	add_to_frontier(NN, F1, F2),
 	search(F2, Path, Cost).
