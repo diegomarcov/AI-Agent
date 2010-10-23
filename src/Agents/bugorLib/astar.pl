@@ -38,9 +38,14 @@ get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			NewCost is Cost + 1,
 			map(NewF, C, plain)
 		)
-	),
-	visitado(node([NewF, C], Cost2, _, _)),
-	NewCost < Cost2.
+	),(
+		(
+			visitado(node([NewF, C], Cost2, _, _)),
+			NewCost < Cost2
+		) ; (
+			not(visitado(node([NewF, C], _, _, _)))
+		)
+	).
 
 get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], n)|NN]):-
 	NewF is F - 1,
@@ -53,8 +58,14 @@ get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			map(NewF, C, plain)
 		)
 	),
-	visitado(node([NewF, C], Cost2, _, _)),
-	NewCost < Cost2.
+	(
+		(
+			visitado(node([NewF, C], Cost2, _, _)),
+			NewCost < Cost2
+		) ; (
+			not(visitado(node([NewF, C], _, _, _)))
+		)
+	).
 
 get_n(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
@@ -70,8 +81,14 @@ get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			map(NewF, C, plain)
 		)
 	),
-	visitado(node([NewF, C], Cost2, _, _)),
-	NewCost < Cost2.
+	(
+		(
+			visitado(node([NewF, C], Cost2, _, _)),
+			NewCost < Cost2
+		) ; (
+			not(visitado(node([NewF, C], _, _, _)))
+		)
+	).
 
 get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], s)|NN]):-
 	NewF is F + 1,
@@ -84,8 +101,14 @@ get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			map(NewF, C, plain)
 		)
 	),
-	visitado(node([NewF, C], Cost2, _, _)),
-	NewCost < Cost2.
+	(
+		(
+			visitado(node([NewF, C], Cost2, _, _)),
+			NewCost < Cost2
+		) ; (
+			not(visitado(node([NewF, C], _, _, _)))
+		)
+	).
 
 get_s(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
@@ -101,8 +124,14 @@ get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			map(F, NewC, plain)
 		)
 	),
-	visitado(node([F, NewC], Cost2, _, _)),
-	NewCost < Cost2.
+	(
+		(
+			visitado(node([F, NewC], Cost2, _, _)),
+			NewCost < Cost2
+		) ; (
+			not(visitado(node([F, NewC], _, _, _)))
+		)
+	).
 
 get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], w)|NN]):-
 	NewC is C - 1,
@@ -115,8 +144,14 @@ get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			map(F, NewC, plain)
 		)
 	),
-	visitado(node([F, NewC], Cost2, _, _)),
-	NewCost < Cost2.
+	(
+		(
+			visitado(node([F, NewC], Cost2, _, _)),
+			NewCost < Cost2
+		) ; (
+			not(visitado(node([F, NewC], _, _, _)))
+		)
+	).
 
 get_w(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
@@ -132,8 +167,14 @@ get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			map(F, NewC, plain)
 		)
 	),
-	visitado(node([F, NewC], Cost2, _, _)),
-	NewCost < Cost2.
+	(
+		(
+			visitado(node([F, NewC], Cost2, _, _)),
+			NewCost < Cost2
+		) ; (
+			not(visitado(node([F, NewC], _, _, _)))
+		)
+	).
 
 get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], e)|NN]):-
 	NewC is C + 1,
@@ -146,8 +187,14 @@ get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			map(F, NewC, plain)
 		)
 	),
-	visitado(node([F, NewC], Cost2, _, _)),
-	NewCost < Cost2.
+	(
+		(
+			visitado(node([F, NewC], Cost2, _, _)),
+			NewCost < Cost2
+		) ; (
+			not(visitado(node([F, NewC], _, _, _)))
+		)
+	).
 
 get_e(node([_F, _C], _Path, _Cost, _Dir), NN, NN).
 
@@ -166,7 +213,8 @@ neighbors(Node, Neighbors):-
 search(F0, [Node|Path], Cost):-
 	select(Node, F0, _F1),
 	Node = node(Pos, Cost, Path, _),
-	meta(Pos).
+	meta(Pos),
+	retractall(visitado(_)).
 
 search(F0, Path, Cost):-
 	select(Node, F0, F1),
@@ -187,60 +235,66 @@ search(F0, Path, Cost):-
 
 search(F0, Path, Cost):-
 	select(Node, F0, F1),
+%   Node = node([F, C], _, _, _),
+%   not(visitado(node([F, C], _, _, _))),
 	assert_once(visitado(Node)),
 	neighbors(Node, NN),
 	add_to_frontier(NN, F1, F2),
 	search(F2, Path, Cost).
 
+search(F0, [], inf):- retractall(visitado(_)).
+
 %translate(From, To, Action):-
-translate(node([X1, Y1], _, _, _), node([X1, Y1], _, _, _), none, _).
+translate(node([X1, Y1], _, _, _), node([X1, Y1], _, _, _), none).
 
-translate(node([X1, Y1], _, _, _), node([X2, Y2], _, _, _), move_fwd, Dir):-
-	(
-		X2 is X1 - 1,
-		Dir = n
-	) ; (
-		X2 is X1 + 1,
-		Dir = s
-	) ; (
-		Y2 is Y1 + 1,
-		Dir = e
-	) ; (
-		Y2 is Y1 - 1,
-		Dir = w
-	).
+translate(node([X1, Y1], _, _, Dir), node([X2, Y2], _, _, Dir), move_fwd).
+%   (
+%     X2 is X1 - 1,
+%     Dir = n
+%   ) ; (
+%     X2 is X1 + 1,
+%     Dir = s
+%   ) ; (
+%     Y2 is Y1 + 1,
+%     Dir = e
+%   ) ; (
+%     Y2 is Y1 - 1,
+%     Dir = w
+%   ).
 
-translate(node([X1, Y1], _, _, _), node([X2, Y2], _, _, _), turn(D), Dir):-
-	X2 is X1 - 1,
-	Dir \= n,
-	D = n.
+translate(node([X1, Y1], _, _, D1), node([X2, Y2], _, _, D2), turn(D2)):-
+	D1 \= D2.
+%   (
+%     X2 is X1 - 1,
+%     Dir \= n,
+%     D = n
+%   ) ; (
+%     X2 is X1 + 1,
+%     Dir \= s,
+%     D = s
+%   ) ; (
+%     Y2 is Y1 + 1,
+%     Dir \= e,
+%     D = e
+%   ) ; (
+%     Y2 is Y1 - 1,
+%     Dir \= w,
+%     D = w
+%   ).
 
-translate(node([X1, Y1], _, _, _), node([X2, Y2], _, _, _), turn(D), Dir):-
-	X2 is X1 + 1,
-	Dir \= s,
-	D = s.
-
-translate(node([X1, Y1], _, _, _), node([X2, Y2], _, _, _), turn(D), Dir):-
-	Y2 is Y1 + 1,
-	Dir \= e,
-	D = e.
-
-translate(node([X1, Y1], _, _, _), node([X2, Y2], _, _, _), turn(D), Dir):-
-	Y2 is Y1 - 1,
-	Dir \= w,
-	D = w.
-
-translateAll([X|Xs], D):-
-	Xs = [X2|Xs2],
-	translate(X, X2, move_fwd, D),
+translateAll([X|Xs]):-
+%   trace,
+	Xs = [X2|_],
+	translate(X, X2, move_fwd),
 	push_action(move_fwd),
-	translateAll(Xs, D).
+	translateAll(Xs).
 
-translateAll([X|Xs], D):-
-	Xs = [X2|Xs2],
-	translate(X, X2, turn(ND), D),
-	push_action(turn(ND)),
-	translateAll([X|Xs], ND).
+translateAll([X|Xs]):-
+	Xs = [X2|_],
+	translate(X, X2, turn(D)),
+	push_action(turn(D)),
+	X = node([X1, Y1], P, C, D1),
+	translateAll([node([X1, Y1], P, C, D)|Xs]).
 
-translateAll([_], _).
-translateAll([], _).
+translateAll([X|[]]).
+translateAll([]).

@@ -18,6 +18,7 @@ current_action(X):- planning_stack([X|_]).
 current_action(none):- planning_stack([]).
 pop_action:- planning_stack([X|Xs]), replace(planning_stack([X|Xs]), planning_stack(Xs)).
 push_action(Action):- planning_stack(X), replace(planning_stack(X), planning_stack([Action|X])).
+reset_actions:- replace(planning_stack(_), planning_stack([])).
 
 decide_action(Action):- 
 	current_strategy(explore),
@@ -46,13 +47,14 @@ decide_action(Action):-
 	treasures_strat(Action).
 
 justdoit(Init, RPath, Cost):-
+	reset_actions,
 	debug(error, 'Antes del search'),
 %   trace,
 	search(Init, Path, Cost),
 	debug(error, 'Despues del search'),
 	reverse(Path, [], RPath),
-	direction(D),
-	translateAll(RPath, D),
+%   direction(D),
+	translateAll(RPath),
 	planning_stack(Acs),
 	reverse(Acs, [], NAcs),
 	debug_term(error, 'Path: ', Path),
@@ -65,6 +67,13 @@ decide_strategy:-
 	current_strategy(X),
 	X \= treasures,
 	push_strategy(treasures).
+
+decide_strategy:-
+	current_strategy(treasures),
+	findall([Name, Pos, T], oro(Name, Pos, T), O),
+	O = [],
+	gtrace,
+	pop_strategy.
 
 decide_strategy:-
 	strategy_stack([]),
