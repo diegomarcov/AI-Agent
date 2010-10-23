@@ -9,8 +9,10 @@ explore_strat:-
 	debug(warning, 'Pase el A*.... LETS A-GO!').
 	
 explore_strat:-
+	debug(warning, 'Fallo el A*. Ahora veo si giro.'),
 	direction(Dir),
-	random(0, 2, Num),
+	random(0, 8, Num),
+	Num < 2,
 	next_random(Num, Dir, Turn),
 	replace(planning_stack(_), planning_stack([])),
 	push_action(turn(Turn)).
