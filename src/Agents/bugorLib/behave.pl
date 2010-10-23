@@ -23,34 +23,38 @@ reset_actions:- replace(planning_stack(_), planning_stack([])).
 decide_action(Action):- 
 	current_strategy(explore),
 	planning_stack([]),
-%   current_pos([X, Y]),
-%   direction(D),
-%   NX is X - 3,
-%   NY is Y + 2,
-%   assert(meta([NX, NY])),
-%   debug_term(warning, 'Meta: ', meta([NX, NY])),
-%   debug_term(warning, 'Pos: ', [X, Y]),
-%   justdoit([node([X, Y], 0, [], D)], _,_),
-%   read(_),
-%   current_action(Action),
-%   pop_action.
-	explore_strat(Action).
+	% current_pos([X, Y]),
+	% direction(D),
+	% NX is X - 3,
+	% NY is Y + 2,
+	% assert(meta([NX, NY])),
+	% debug_term(warning, 'Meta: ', meta([NX, NY])),
+	% debug_term(warning, 'Pos: ', [X, Y]),
+	% debug_term(error, 'Path: ', Path),
+	% debug_term(error, 'Actions: ', NAcs),
+	% justdoit([X, Y], _,_),
+	% read(_),
+	% current_action(Action),
+	explore_strat,
+	debug(warning, 'Termine de explorar'),
+	current_action(Action), 
+	debug_term(warning, 'Ahora voy a ', Action),
+	pop_action.
 
 decide_action(Action):-
 %   debug(warning, 'A CIEGAS'),
 	current_strategy(explore),
 	current_action(Action),
+	debug_term(warning, 'No hice A*. Ahora voy a ', Action),
 	pop_action.
 
-decide_action(Action):-
-	current_strategy(treasures),
-	treasures_strat(Action).
-
+% init es la lista [X,Y] con la posicion inicial; en RPath y Cost se devuelve el path invertido y el costo
+% justdoit va hacia el nodo marcado por el predicado meta/1
 justdoit(Init, RPath, Cost):-
 	reset_actions,
 	debug(error, 'Antes del search'),
 %   trace,
-	search(Init, Path, Cost),
+	search(node(Init,0,[],D), Path, Cost),
 	debug(error, 'Despues del search'),
 	reverse(Path, [], RPath),
 %   direction(D),
