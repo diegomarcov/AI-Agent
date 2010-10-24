@@ -1,21 +1,41 @@
-explore_strat:-
-	getNotVisited([Self | NotVisited]),
-	explore_unknown(NotVisited).
-
 explore_unknown([]).
 
 explore_unknown([Target|Targets]):-
-	current_pos([X,Y]),
+	me([X, Y], _, _, _, _),
+%   current_pos([X,Y]),
 	debug_term(warning, 'Current pos = ', [X,Y]),
 	replace(meta(_), meta(Target)),
-	debug_term(warning, 'Meta: ', meta(Target)),
+	debug_term(warning, 'Meta: ', Target),
 	justdoit([X,Y],_,Cost),
 	debug_term(warning, 'Pase el A*.... LETS A-GO!', Cost),
-	( Cost \= inf ; read(_), explore_unknown(Targets) ).
+	( Cost \= inf ; explore_unknown(Targets) ).
+
+explore_unknown1([Self | NotVisited]):-
+%   current_pos(CPos),
+	me(CPos, _, _, _, _),
+	Self = CPos,
+	explore_unknown(NotVisited).
+
+explore_unknown1(NotVisited):-
+	explore_unknown(NotVisited).
+
+explore_strat:-
+	getNotVisited(NotVisited),
+	NotVisited \= [],
+	explore_unknown1(NotVisited).
+
+explore_strat:-
+	debug(warning, 'ME MUEVO RANDOMMMMMMM'),
+	findall([X, Y], (map(X, Y, Land), (Land = mountain; Land = plain)), Targets),
+	length(Targets, CantTargets),
+	random(1, CantTargets, Index),
+	nth1(Index, Targets, Target),
+	explore_unknown([Target]).
 	
 explore_strat:-
 	debug(warning, 'Fallo el A*. Ahora veo si giro.'),
-	direction(Dir),
+	me(_, Dir, _, _, _),
+%   direction(Dir),
 	random(0, 8, Num),
 	Num < 2,
 	next_random(Num, Dir, Turn),
@@ -35,7 +55,8 @@ next_random(1, Dir, Turn):-
 	next_90_clockwise(Dir2, Turn).	
 
 getNotVisited(TargetList3):-
-	current_pos(Pos),
+	me(Pos, _, _, _, _),
+%   current_pos(Pos),
 	findall([C, X, Y], 
 		(
 			map(X,Y,Land),
@@ -63,7 +84,7 @@ getNotVisited(TargetList3):-
 	debug_term(warning, 'Pase', TargetList),
 	sort(TargetList, TargetList2),
 	debug(warning, 'Pase2'),
-	findall([X1, Y1], member([C1, X1, Y1], TargetList2), TargetList3),
+	findall([X1, Y1], member([_C1, X1, Y1], TargetList2), TargetList3),
 	debug_term(warning, 'TargetList: ', TargetList3).
 %   length(TargetList, CantTargets),
 %   random(1, CantTargets, Index),

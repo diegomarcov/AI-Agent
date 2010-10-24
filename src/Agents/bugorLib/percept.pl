@@ -1,8 +1,16 @@
 % Percept %%%%%%%%%%%%%%%%%%%%%%%%
 
-update_state([Turn, Vision, _Attr, _Inventory]):-
+update_state([Turn, Vision, Attrs, _Inventory]):-
 	save_turn(Turn),
-	save_map(Vision).
+	save_map(Vision),
+	member([pos, Pos], Attrs),
+	member([dir, Dir], Attrs),
+	member([stamina, St], Attrs),
+	member([max_stamina, MSt], Attrs),
+	member([fight_skill, FS], Attrs),
+	replace(me(_,_,_,_,_), me(Pos, Dir, St, MSt, FS)),
+	me(P1,D1,S1,MS1,FS1),
+	debug_term(error, 'Attrs: ', [P1,D1,S1,MS1,FS1]).
 	
 % recuerdo que habia oro, pero alguien lo levanto!
 processPosition(X, Y, Land, Objects):-
@@ -100,10 +108,10 @@ analize_things([Pos, Obj]):-
 
 % este caso es cuando bugor se ve a si mismo; simplemente se ignora
 analize_things([Pos, Obj]):-
-	Obj = [agent, bugor, Attrs],
-	member([dir, D], Attrs),
-	replace(direction(_), direction(D)),
-	replace(current_pos(_), current_pos(Pos)).
+	Obj = [agent, bugor, Attrs].
+%   member([dir, D], Attrs),
+%   replace(direction(_), direction(D)),
+%   replace(current_pos(_), current_pos(Pos)).
 
 % Predicado para filtrar atributos de agente
 %

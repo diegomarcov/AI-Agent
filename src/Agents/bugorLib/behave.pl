@@ -25,30 +25,13 @@ reset_actions:- replace(planning_stack(_), planning_stack([])).
 decide_action(Action):- 
 	current_strategy(explore),
 	planning_stack([]),
-	% current_pos([X, Y]),
-	% direction(D),
-	% NX is X - 3,
-	% NY is Y + 2,
-	% assert(meta([NX, NY])),
-	% debug_term(warning, 'Meta: ', meta([NX, NY])),
-	% debug_term(warning, 'Pos: ', [X, Y]),
-	% debug_term(error, 'Path: ', Path),
-	% debug_term(error, 'Actions: ', NAcs),
-	% justdoit([X, Y], _,_),
-	% read(_),
-	% current_action(Action),
   explore_strat,
-	current_pos(Pos),
-%   justdoit(Pos, _Path, Cost),
-%   debug_term(warning, 'FIN: ', Cost),
 	debug(warning, 'Termine de explorar'),
-%   read(_),
 	current_action(Action), 
 	debug_term(warning, 'Ahora voy a ', Action),
 	pop_action.
 
 decide_action(Action):-
-%   debug(warning, 'A CIEGAS'),
 	current_strategy(explore),
 	current_action(Action),
 	debug_term(warning, 'No hice A*. Ahora voy a ', Action),
@@ -59,8 +42,7 @@ decide_action(Action):-
 justdoit(Init, RPath, Cost):-
 	reset_actions,
 	debug(error, 'Antes del search'),
-%   gtrace,
-	direction(D),
+	me(_, D, _, _, _),
 	search([node(Init,0,[],D)], Path, Cost),
 	retractall(visitado(_)),
 	debug(error, 'Despues del search'),
@@ -73,11 +55,16 @@ justdoit(Init, RPath, Cost):-
 	replace(planning_stack(Acs), planning_stack(NAcs)).
 
 % decide_strategy:-
-%   turn(T),
-%   T > 10,
-%   current_strategy(X),
-%   X \= treasures,
-%   push_strategy(treasures).
+%   me(_Pos, _Dir, St, MSt, _FS),
+%   Perc is MSt / St,
+%   Perc < 0.40,
+%   push_strategy(fleeHostel).
+
+decide_strategy:-
+	oro(_, _, _),
+	current_strategy(X),
+	X \= treasures,
+	push_strategy(treasures).
 
 decide_strategy:-
 	current_strategy(treasures),

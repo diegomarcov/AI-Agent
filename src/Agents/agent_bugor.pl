@@ -23,6 +23,7 @@
 :- dynamic ag_name/1.
 :- dynamic direction/1.
 :- dynamic current_pos/1.
+:- dynamic me/5.
 
 % Predicados dinamicos para el comportamiento
 :- dynamic strategy_stack/1.
