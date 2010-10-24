@@ -37,7 +37,9 @@ save_map(Vision):-
 	strategy_stack(St),
 	planning_stack(PSt),
 	debug_term(warning, 'Strategy stack ', St),
-	debug_term(warning, 'Planning stack ', PSt).
+	debug_term(warning, 'Planning stack ', PSt),
+	findall(N1, visitado(N1), Vis),
+	debug_term(warning, 'Visitados: ', Vis).
 
 % Analiza un elemento visto
 % Si es oro o posada, recuerdo
