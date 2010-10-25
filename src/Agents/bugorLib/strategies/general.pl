@@ -24,6 +24,14 @@ explore_strat:-
 	NotVisited \= [],
 	explore_unknown1(NotVisited).
 
+% Si ya conozco todo el mapa, voy a explorar a donde recuerdo que habia tesoros
+explore_strat:-
+	findall([Name, Pos, T], oro(Name, Pos, T), Which),
+	treasures_strat(Which),
+	planning_stack(X), % si no recuerdo que habia ningun tesoro, falla
+	X \= [].
+
+% si la anterior fallo, voy a algun lugar aleatorio para ver que pasa
 explore_strat:-
 %   debug(warning, 'ME MUEVO RANDOMMMMMMM'),
 	findall([X, Y], (map(X, Y, Land), (Land = mountain; Land = plain)), Targets),

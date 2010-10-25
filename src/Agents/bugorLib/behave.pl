@@ -32,20 +32,20 @@ decide_action(pickup(Name)):-
 	debug(info, 'OH! Hay oro aca... juntando'),
 	retractall(oro(Name, Pos, _)). % Nos olvidamos que estaba ahi
 
-decide_action(rest):-
-	me(Pos, _, St, MSt, _),
-	posadas(Pos),
-	Perc is St * 100 / MSt,
-	Perc < 70,
-	current_strategy(fleeHostel),
-	pop_strategy,
-	debug(info, 'Apa! que cansado que estoy... mejor me planto aca').
+% decide_action(rest):-
+%   me(Pos, _, St, MSt, _),
+%   posadas(Pos),
+%   Perc is St * 100 / MSt,
+%   Perc < 40,
+%   current_strategy(fleeHostel),
+%   pop_strategy,
+%   debug(info, 'Apa! que cansado que estoy... mejor me planto aca').
 
 decide_action(rest):-
 	me(Pos, _, St, MSt, _),
 	posadas(Pos),
 	Perc is St * 100 / MSt,
-	Perc < 70,
+	Perc < 95,
 	debug(info, 'Apa! que cansado que estoy... mejor me planto aca').
 
 decide_action(Action):- 
@@ -71,19 +71,19 @@ decide_action(Action):-
 	current_action(Action),
 	pop_action.
 
-% decide_action(Action):-
-%   current_strategy(treasures),
-%   planning_stack([]),
-%   sight(AtSight),
-%   turno(T),
-%   findall([Name, Pos, T], member([Pos, [treasure, Name, _]], AtSight), Which),
-%   treasures_strat(Which),
-%   what_to_do(Action).
+decide_action(Action):-
+%   gtrace,
+	current_strategy(treasures),
+	planning_stack([]),
+	sight(AtSight),
+	turno(T),
+	findall([Name, Pos, T], member([Pos, [treasure, Name, _]], AtSight), Which),
+	treasures_strat(Which),
+	doit_orpop(Action).
 
-% decide_action(Action):-
-%   current_strategy(treasures),
-%   current_action(Action),
-%   pop_action.
+decide_action(Action):-
+	current_strategy(treasures),
+	doit_orpop(Action).
 
 % what_to_do(Action):-
 %   planning_stack([]),
@@ -112,7 +112,7 @@ decide_strategy:-
 	X \= fleeHostel,
 	me(_Pos, _Dir, St, MSt, _FS),
 	Perc is St * 100 / MSt,
-	Perc < 70,
+	Perc < 40,
 	push_strategy(fleeHostel),
 	reset_actions,
 	debug(info, 'Upa... Mejor me voy al hostel mas cercano!').
@@ -121,23 +121,23 @@ decide_strategy:-
 	current_strategy(fleeHostel),
 	me(_Pos, _Dir, St, MSt, _FS),
 	Perc is St * 100 / MSt,
-	Perc >= 70,
+	Perc >= 95,
 	pop_strategy,
 	debug(info, 'Listo la recargada, sigamos...').
 
-% decide_strategy:-
-%   sight(AtSight),
-%   member([_Pos, [treasure, _Name, _]], AtSight), % si veo algun tesoro
-%   current_strategy(X),
-%   X \= treasures, % la estrategia actual no es buscar tesoros
+decide_strategy:-
+	sight(AtSight),
+	member([_Pos, [treasure, _Name, _]], AtSight), % si veo algun tesoro
+	current_strategy(X),
+	X \= fleeHostel, % si estamos huyendo a una posada, no cambiamos de estrategia
+	X \= treasures, % la estrategia actual no es buscar tesoros
 %   turno(T),
 %   findall([Name, Pos, T], member([Pos, [treasure, Name, _]], AtSight), Which), % de todos ellos
 %   most_close(Which), % calculo las distancias
 %   planning_stack(St),
 %   St \= [], % y si existe al menos uno que no es inf en costo, entonces ya tenemos un planning
-%%reset_actions,
-%   push_strategy(treasures), % defino la estrategia de busqueda de tesoros
-%   debug(info, 'Hmmm me parece que he visto un lindo tesorito... MIO!').
+	push_strategy(treasures), % defino la estrategia de busqueda de tesoros
+	debug(info, 'Hmmm me parece que he visto un lindo tesorito... MIO!').
 
 % decide_strategy:-
 %   sight(AtSight),
