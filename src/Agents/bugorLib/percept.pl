@@ -100,13 +100,15 @@ analize_things([Pos, Obj]):-
 %    - dir = {n, s, w, e}
 analize_things([Pos, Obj]):-
 	Obj = [agent, Name, Attrs],
-	Name \= bugor, % Descartamos analizar este mismo agente
+	ag_name(Bugor),
+	Name \= Bugor, % Descartamos analizar este mismo agente
 	% Para todos los agentes: se lo recuerda
 	forall(member([AttrName, Value], Attrs), remember_agent(Name, Pos, [AttrName, Value])).
 
 % este caso es cuando bugor se ve a si mismo; simplemente se ignora
 analize_things([_Pos, Obj]):-
-	Obj = [agent, bugor, _Attrs].
+	ag_name(Bugor),
+	Obj = [agent, Bugor, _Attrs].
 %   member([dir, D], Attrs),
 %   replace(direction(_), direction(D)),
 %   replace(current_pos(_), current_pos(Pos)).

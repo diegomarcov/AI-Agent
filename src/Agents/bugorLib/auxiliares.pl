@@ -1,7 +1,4 @@
 % Auxiliares %%%%%%%%%%%%%%%%%%%%%
-reverse([X|Y],Z,W) :- reverse(Y,[X|Z],W).
-reverse([],X,X).
-
 % Reemplaza conocimiento guardado con asserts
 replace(X, Y):- 
 	retractall(X), !,

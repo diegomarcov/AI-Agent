@@ -12,6 +12,9 @@
 % Estrategia para huir al hostel
 :- consult(strategies/fleehostel).
 
+% Estrategia para huir al hostel
+:- consult(strategies/flee).
+
 % X puede ser: initial, explore, hitNrun, treasures, fleeLikeAPussy, fleeHostel,
 % killkillkill
 push_strategy(St):- strategy_stack(X), replace(strategy_stack(X), strategy_stack([St|X])).
@@ -85,6 +88,16 @@ decide_action(Action):-
 	current_strategy(treasures),
 	doit_orpop(Action).
 
+decide_action(Action):-
+	current_strategy(flee),
+	planning_stack([]),
+	flee_strat,
+	doit_orpop(Action).
+
+decide_action(Action):-
+	current_strategy(flee),
+	doit_orpop(Action).
+
 % what_to_do(Action):-
 %   planning_stack([]),
 %   pop_strategy,
@@ -101,11 +114,22 @@ justdoit(Init, RPath, Cost):-
 	me(_, D, _, _, _),
 	search([node(Init,0,[],D)], Path, Cost),
 	retractall(visitado(_)),
-	reverse(Path, [], RPath),
+	reverse(Path, RPath),
 	translateAll(RPath),
 	planning_stack(Acs),
-	reverse(Acs, [], NAcs),
+	reverse(Acs, NAcs),
 	replace(planning_stack(Acs), planning_stack(NAcs)).
+
+decide_strategy:-
+	sight(Sight),
+	ag_name(Bugor),
+	member([_, [agent, Bugor, Attrs]], Sight),
+	member([attacked_by, Names], Attrs),
+	debug_term(info, 'AHHHHH ME ATACA', Names),
+	debug(info, 'Yo mejor me rajo...'),
+	current_strategy(X),
+	X \= flee,
+	push_strategy(flee).
 
 decide_strategy:-
 	current_strategy(X),
@@ -130,6 +154,7 @@ decide_strategy:-
 	member([_Pos, [treasure, _Name, _]], AtSight), % si veo algun tesoro
 	current_strategy(X),
 	X \= fleeHostel, % si estamos huyendo a una posada, no cambiamos de estrategia
+	X \= flee, % si nos estan atacando seguir huyendo
 	X \= treasures, % la estrategia actual no es buscar tesoros
 %   turno(T),
 %   findall([Name, Pos, T], member([Pos, [treasure, Name, _]], AtSight), Which), % de todos ellos
