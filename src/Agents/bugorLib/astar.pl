@@ -62,7 +62,7 @@ get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			map(NewF, C, plain)
 		)
 	),
-	handle_node(node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir), Front, NFront).
+	handle_node(node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)], Dir), Front, NFront).
 
 get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)], n)|NN], Front, NFront):-
 	NewF is F - 1,
@@ -76,7 +76,7 @@ get_n(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			map(NewF, C, plain)
 		)
 	),
-	handle_node(node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir), Front, NFront).
+	handle_node(node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)], Dir), Front, NFront).
 
 get_n(node([_F, _C], _Path, _Cost, _Dir), NN, NN, Front, Front).
 
@@ -92,7 +92,7 @@ get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			map(NewF, C, plain)
 		)
 	),
-	handle_node(node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir), Front, NFront).
+	handle_node(node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)], Dir), Front, NFront).
 
 get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)], s)|NN], Front, NFront):-
 	NewF is F + 1,
@@ -106,7 +106,7 @@ get_s(node([F, C], Cost, Path, Dir), NN, [node([NewF, C], NewCost, [node([F, C],
 			map(NewF, C, plain)
 		)
 	),
-	handle_node(node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir), Front, NFront).
+	handle_node(node([NewF, C], NewCost, [node([F, C], Cost, Path, Dir)], Dir), Front, NFront).
 
 get_s(node([_F, _C], _Path, _Cost, _Dir), NN, NN, Front, Front).
 
@@ -122,7 +122,7 @@ get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			map(F, NewC, plain)
 		)
 	),
-	handle_node(node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir), Front, NFront).
+	handle_node(node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)], Dir), Front, NFront).
 
 get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)], w)|NN], Front, NFront):-
 	NewC is C - 1,
@@ -136,7 +136,7 @@ get_w(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			map(F, NewC, plain)
 		)
 	),
-	handle_node(node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir), Front, NFront).
+	handle_node(node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)], Dir), Front, NFront).
 
 get_w(node([_F, _C], _Path, _Cost, _Dir), NN, NN, Front, Front).
 
@@ -152,7 +152,7 @@ get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			map(F, NewC, plain)
 		)
 	),
-	handle_node(node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir), Front, NFront).
+	handle_node(node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)], Dir), Front, NFront).
 
 get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)], e)|NN], Front, NFront):-
 	NewC is C + 1,
@@ -166,7 +166,7 @@ get_e(node([F, C], Cost, Path, Dir), NN, [node([F, NewC], NewCost, [node([F, C],
 			map(F, NewC, plain)
 		)
 	),
-	handle_node(node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)|Path], Dir), Front, NFront).
+	handle_node(node([F, NewC], NewCost, [node([F, C], Cost, Path, Dir)], Dir), Front, NFront).
 
 get_e(node([_F, _C], _Path, _Cost, _Dir), NN, NN, Front, Front).
 

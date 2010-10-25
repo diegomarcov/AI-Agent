@@ -14,7 +14,7 @@
 
 % Predicados dinamicos para la percepsion
 :- dynamic map/3.
-:- dynamic turn/1.
+:- dynamic turno/1.
 :- dynamic posadas/1.
 % oro(nombre, ubicacion, turno)
 % ubicacion = [X, Y] | nombre_de_agente
@@ -24,13 +24,14 @@
 :- dynamic direction/1.
 :- dynamic current_pos/1.
 :- dynamic me/5.
+:- dynamic sight/1.
 
 % Predicados dinamicos para el comportamiento
 :- dynamic strategy_stack/1.
 :- dynamic planning_stack/1.
 
 % init de los predicados dinamicos
-turn(0).
+turno(0).
 agentes([]).
 strategy_stack([]).
 planning_stack([]).

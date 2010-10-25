@@ -1,17 +1,15 @@
 % Percept %%%%%%%%%%%%%%%%%%%%%%%%
 
 update_state([Turn, Vision, Attrs, _Inventory]):-
-	save_turn(Turn),
-	save_map(Vision),
 	member([pos, Pos], Attrs),
 	member([dir, Dir], Attrs),
 	member([stamina, St], Attrs),
 	member([max_stamina, MSt], Attrs),
 	member([fight_skill, FS], Attrs),
 	replace(me(_,_,_,_,_), me(Pos, Dir, St, MSt, FS)),
-	me(P1,D1,S1,MS1,FS1),
-	debug_term(error, 'Attrs: ', [P1,D1,S1,MS1,FS1]).
-	
+	save_turn(Turn),
+	save_map(Vision).
+
 % recuerdo que habia oro, pero alguien lo levanto!
 processPosition(X, Y, Land, Objects):-
 	assert_once(map(X, Y, Land)),  % Guardamos el mapa
@@ -35,6 +33,8 @@ save_map(Vision):-
 	term_to_atom(Mapa, M),
 	debug_term(info, 'Known Map: ', M),
 	objects_at_sight(Vision, ObjectsAtSight), % Recolectamos los objetos que vemos
+	replace(sight(_), sight(ObjectsAtSight)),
+	debug_term(warning, 'At sight: ', ObjectsAtSight),
 	forall(member([Pos, Obj], ObjectsAtSight), (analize_things([Pos, Obj]))),
 	findall([X, Y], posadas([X,Y]), P),
 	debug_term(info, 'Known hostels: ', P),
@@ -45,9 +45,7 @@ save_map(Vision):-
 	strategy_stack(St),
 	planning_stack(PSt),
 	debug_term(warning, 'Strategy stack ', St),
-	debug_term(warning, 'Planning stack ', PSt),
-	findall(N1, visitado(N1), Vis),
-	debug_term(warning, 'Visitados: ', Vis).
+	debug_term(warning, 'Planning stack ', PSt).
 
 % Analiza un elemento visto
 % Si es oro o posada, recuerdo
@@ -70,21 +68,21 @@ analize_things([Pos, Obj]):-
 analize_things([[X, Y], Obj]):-
 	Obj = [treasure, Name, _Attrs],
 	% Agrego el tesoro
-	turn(T), % Se guarda el turno en el que se vio
+	turno(T), % Se guarda el turno en el que se vio
 	not(oro(Name, [X, Y], _)), % Nunca vimos este tesoro
 	assert_once_oro(Name, [X, Y], T).
 
 analize_things([[X, Y], Obj]):-
 	Obj = [treasure, Name, _Attrs],
 	% Agrego el tesoro
-	turn(T), % Se guarda el turno en el que se vio
+	turno(T), % Se guarda el turno en el que se vio
 	oro(Name, [X, Y], _), % Se recordaba el oro en esa posicion (no "en la mano" de ningun agente)
 	assert_once_oro(Name, [X, Y], T).
 
 analize_things([Pos, Obj]):-
 	Obj = [treasure, Name, _Attrs],
 	% Agrego el tesoro
-	turn(T), % Se guarda el turno en el que se vio
+	turno(T), % Se guarda el turno en el que se vio
 	oro(Name, AgName, _), % Se recordaba el oro en la mano del agente AgName y ahora esta en el piso
 	agentes(A),
 	assert_once_oro(Name, Pos, T),
@@ -107,8 +105,8 @@ analize_things([Pos, Obj]):-
 	forall(member([AttrName, Value], Attrs), remember_agent(Name, Pos, [AttrName, Value])).
 
 % este caso es cuando bugor se ve a si mismo; simplemente se ignora
-analize_things([Pos, Obj]):-
-	Obj = [agent, bugor, Attrs].
+analize_things([_Pos, Obj]):-
+	Obj = [agent, bugor, _Attrs].
 %   member([dir, D], Attrs),
 %   replace(direction(_), direction(D)),
 %   replace(current_pos(_), current_pos(Pos)).
@@ -135,7 +133,7 @@ remember_agent(Name, _, [previous_turn_action, pickup(TName)]):-
 	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
 	NewPick is Picking + 1,
 	replace(agentes(_), agentes(NewA)),
-	turn(T),
+	turno(T),
 	replace(oro(TName, _, _), oro(TName, Name, T)),
 	insert_agent(Name, Attack, NewPick, Slow).
 
@@ -146,19 +144,19 @@ remember_agent(Name, Pos, [previous_turn_action, drop(TName)]):-
 	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
 	NewPick is Picking - 1,
 	replace(agentes(_), agentes(NewA)),
-	turn(T),
+	turno(T),
 	replace(oro(TName, _, _), oro(TName, Pos, T)),
 	insert_agent(Name, Attack, NewPick, Slow).
 
 % Si el predicado member falla, es decir, nunca vimos a este agente:
 remember_agent(Name, _, [previous_turn_action, pickup(TName)]):-
-	turn(T),
+	turno(T),
 	replace(oro(TName, _, _), oro(TName, Name, T)),
 	insert_agent(Name, 0, 1, false).
 
 % Si el predicado member falla, es decir, nunca vimos a este agente:
 remember_agent(Name, Pos, [previous_turn_action, drop(TName)]):-
-	turn(T),
+	turno(T),
 	replace(oro(TName, _, _), oro(TName, Pos, T)),
 	insert_agent(Name, 0, 0, false).
 
@@ -226,5 +224,5 @@ agent_priority(agente(_Name, Attack, Pick, true), Priority):-
 
 % Guardo el numero de turno actual
 save_turn(Turn):-
-	retract(turn(_)),
-	assert(turn(Turn)).
+	retract(turno(_)),
+	assert(turno(Turn)).
