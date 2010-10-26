@@ -217,12 +217,18 @@ insert_agent(_Name, _Attack, _Picking, _Slow).
 
 agent_priority(agente(_Name, Attack, Pick, false), Priority):-
 	Total is Pick + Attack,
+	Total \= 0,
 	Priority is Pick * 100 / Total.
 
 agent_priority(agente(_Name, Attack, Pick, true), Priority):-
 	Total is Pick + Attack,
+	Total \= 0,
 	Temp is Pick * 100 / Total,
 	Priority is Temp * 2.
+
+agent_priority(agente(_Name, Attack, Pick, _Slow), 1):-
+	Total is Pick + Attack,
+	Total = 0.
 
 % Guardo el numero de turno actual
 save_turn(Turn):-
