@@ -24,12 +24,12 @@
 		
 \tableofcontents
 
-\chapter*{Introducción}
-\section*{Descripción}
+\chapter{Introducción}
+\section{Descripción}
 
 Este proyecto consiste en la implementación del comportamiento del agente Bugor en el entorno provisto por la cátedra. El comportamiento del agente se decide dinámicamente en cada turno en base a la percepción que se mostró durante la primer entrega, y los objetivos principales del agente son explorar la mayor cantidad del mapa posible, obtener la mayor cantidad de tesoros, y aumentar su fight\_skill de la manera menos peligrosa posible.
 
-\section*{Modularización}
+\section{Modularización}
 Para facilitar la lectura del código, la implementación de Bugor está separada en diferentes módulos en la carpeta /bugorLib. A continuación describiremos brevemente el contenido de cada uno, y más adelante se detallarán las estrategias empleadas:
 \begin{itemize}
 	\item \textbf{astar.pl}: incluye la implementación del algoritmo de búsqueda A*.
@@ -89,8 +89,27 @@ PONÉ LOS EJEMPLOS, PELADOOOOOOOOOO... BIOOOOOOOOOOOMMMMMMMMMMMMMMMMMMM!
 
 Dependiendo del momento, el estado y la percepción del mundo, Bugor puede utilizar diferentes estrategias de comportamiento para lograr sus intenciones (principalmente: no morir, conseguir oro, explorar y mejorar su fight\_skill). El manejo de las estrategias en el agente es realizado mediante una pila: según sea necesario, se apila una estrategia, se trabaja según ella, y posteriormente se desapila y se continúa trabajando con la estrategia anterior. Cuando la pila de estrategias se encuentra vacía, por default se apila la estrategia de exploración.
 
-Cada una de las estrategias se define como \emph{apropiativa} o \emph{no apropiativa}. Esta característica es la que
+Cada una de las estrategias tiene una prioridad definida, y únicamente se puede apilar una estrategia encima de otra cuando ésta tiene mayor o igual prioridad. Esta característica es la que indicará si una estrategia espera a que otra termine para comenzar a actuar, o si puede interrumpir el desarrollo de otra estrategia.
 
-El agente además posee una pila de acciones, que corresponden siempre a la estrategia en el tope de la pila de estrategias.
+El agente además posee una pila de acciones, que corresponden siempre a la estrategia en el tope de la pila de estrategias. Bugor utilizará esta pila para planificar sus movimientos futuros dentro del mapa.
+
+Pasaremos ahora a describir las estrategias implementadas.
+
+\section{General}
+La estrategia "`general"' (o "`estrategia de exploración"') es utilizada por Bugor para explorar pedazos de mapa que no conocía anteriormente. Sabiendo que el agente posee una representación interna del mapa del mundo, el primer paso es obtener todos los \emph{nodos frontera} que sean \emph{plain} o \emph{mountain} en dicho mapa interno. Un nodo es considerado \emph{frontera} cuando tiene al menos un vecino que no se conoce.
+
+A continuación, todos estos nodos son ordenados según la \emph{distancia manhattan} respecto a la posición actual de Bugor. El nodo frontera con la menor distancia manhattan es marcado como meta, y el agente se dirige hacia allí.
+
+La decisión de ordenar los nodos heurísticamente y no elegirlos de manera aleatoria se tomó para evitar que el agente se dirija hacia una posición muy lejana por el simple hecho de explorar; resulta más provechoso explorar repetidas veces nodos cercanos en la frontera que explorar una única posición de la frontera muy lejana.
+
+En el caso de que el nodo elegido no pueda ser accedido (es decir, cuando el costo de A* aplicado a ese nodo es la constante que representa \emph{infinito}), se prosigue a explorar el siguiente nodo con menor heurística de la lista.
+
+Mientras el agente esté aplicando esta estrategia, siempre que vea oro, intentará ir a buscarlo inmediatamente. Si existe un camino para llegar al oro por las porciones de mapa conocido, se apila la secuencia de acciones a realizar para llegar a dicho tesoro en la pila de acciones, se realizan inmediatamente para intentar recogerlo, y se continúa explorando. Si el tesoro es, por el momento, inalcanzable, se prosigue explorando como se planeó originalmente y el tesoro queda igualmente recordado en la "`memoria"' del agente.
+
+Una vez que el mapa esté completamente explorado, si el agente recuerda la existencia de tesoros que no pudo recoger, va en busca de ellos. Para definir cuál de los tesoros será buscado se realiza un balance entre la cantidad de turnos que pasaron desde la última vez que éste fue visto, y el costo de ir a buscarlo.
+
+Por último, en caso de que el mapa ya esté completamente explorado y Bugor no recuerde la existencia de tesoros pendientes, simplemente se desplazará al azar por el mapa.
+
+\section{}
 
 \end{document}
