@@ -51,7 +51,9 @@ Si bien la base de la percepción fue diseñada en la primer entrega del proyecto,
 
 Por empezar, se corrigió un bug que resultaba en que si un agente tiraba al suelo un tesoro, la cantidad de tesoros mantenida por dicho agente podía ser negativa. Por otro lado, también se agregó el hecho de que los ataques por la espalda a Bugor queden también registrados en la caracterización de los agentes rivales.
 
-Se agregó, además, la utilización del predicado dinámico \textbf{sight} que refleja de manera conveniente el campo visual de Bugor. Este predicado se actualiza todos los turnos, y es utilizado en la mayoría de las estrategias para decidir la acción a realizar.
+Se agregó, además, la utilización del predicado dinámico \emph{sight/1} que refleja de manera conveniente el campo visual de Bugor. Este predicado se actualiza todos los turnos, y es utilizado en la mayoría de las estrategias para decidir la acción a realizar.
+
+Por último, ahora también contamos con un predicado dinámico \emph{me/5}, que también se actualiza todos los turnos, y contiene la información del estado del agente (posición actual, dirección actual, stamina, stamina máxima y fight\_skill).
 
 \chapter{Búsqueda}
 \section{Características del algoritmo}
@@ -61,20 +63,34 @@ En nuestra implementación, el algoritmo tiene una única meta; esto significa que
 
 \section{Representación de nodos}
 
-Los nodos en el algoritmo de búsqueda están representados por su posición en el mapa, el costo parcial asociado, el nodo antecesor y una dirección. La posición contiene una lista \emph{[X,Y]} con las coordenadas; el nodo antecesor indica desde qué nodo se pasó al nodo actual; la dirección indica hacia qué punto cardinal estará mirando el agente, y el costo parcial asociado se calcula según el costo del nodo antecesor, más el costo de desplazamiento (1 si es \emph{plain}, 2 si es \emph{mountain}) más el costo de giro (0 si la dirección en el nodo es la misma que la dirección en el padre, 1 si es necesario realizar un giro de un nodo al otro). Nótese que es posible construir el path a un nodo concatenando recursivamente todos los antecesores.
+Los nodos en el algoritmo de búsqueda están representados por su posición en el mapa, el costo parcial asociado, el nodo antecesor y una dirección. La posición es una lista \emph{[X,Y]} con las coordenadas; el nodo antecesor indica desde qué nodo se pasó al nodo actual; la dirección indica hacia qué punto cardinal estará mirando el agente, y el costo parcial asociado se calcula según el costo del nodo antecesor, más el costo de desplazamiento (1 si es \emph{plain}, 2 si es \emph{mountain}) más el costo de giro (0 si la dirección en el nodo es la misma que la dirección en el padre, 1 si es necesario realizar un giro de un nodo al otro). Nótese que es posible construir el path a un nodo concatenando recursivamente todos los antecesores.
 
-Los únicos nodos que se generan son aquellas posiciones del mapa cuyo terreno es \emph{plain} o \emph{mountain}. De esta manera, los bosques, el agua, y los trozos de mapa no explorados no son considerados en la búsqueda. Esto convierte a nuestra implementación en un algoritmo pesimista, dado que si es absolutamente necesario cruzar por una zona desconocida del mapa, el algoritmo fallará.
+Los únicos nodos que se generan son aquellas posiciones del mapa cuyo terreno es \emph{plain} o \emph{mountain}. De esta manera, los bosques, el agua, y los trozos de mapa no explorados no son considerados en la búsqueda. Esto convierte a nuestra implementación en un algoritmo pesimista, dado que asume que no se puede caminar por las partes desconocidas del mapa. Se encuentra definida, adicionalmente, una constante para indicar que el costo de un camino es "`infinito"', utilizada para indicar que un camino dado no puede llevar a la meta.
 
 \section{Función heurística}
 
 La función heurística empleada en nuestro A* es la \emph{distancia manhattan} de un nodo a la meta. Dado que la meta es única, esta función no tiene ningún tipo de complicaciones, y garantiza subestimar el costo de movimiento.
 
+\section{Control de nodos visitados}
+
+Para evitar caer en ciclos y obtener siempre el camino minimal, el algoritmo utiliza el predicado dinámico \emph{visitados/1}. Cada vez que se generan los vecinos de un nodo, se checkea si las posiciones de cada uno de ellos ya fueron visitadas o están en la frontera; en cualquiera de estos dos casos, si el costo del nodo visitado o en frontera es mayor al del camino actual, es borrado y reemplazado por el nuevo.
+
 \section{Resultado del algoritmo}
 
 De existir un camino por las partes ya exploradas del mapa hacia la meta deseada, el algoritmo siempre lo encuentra; el resultado de la aplicación de nuestro A* es una lista de nodos; en la práctica, como se verá más adelante, dicha lista se traduce a una secuencia de acciones a realizar.
 
+En caso de que sea absolutamente necesario cruzar por una zona desconocida del mapa, el algoritmo devolverá un camino vacío y con el costo "`infinito"' definido por la constante mencionada anteriormente.
+
 \section{Ejemplos}
 
 PONÉ LOS EJEMPLOS, PELADOOOOOOOOOO... BIOOOOOOOOOOOMMMMMMMMMMMMMMMMMMM!
+
+\chapter{Estrategias}
+
+Dependiendo del momento, el estado y la percepción del mundo, Bugor puede utilizar diferentes estrategias de comportamiento para lograr sus intenciones (principalmente: no morir, conseguir oro, explorar y mejorar su fight\_skill). El manejo de las estrategias en el agente es realizado mediante una pila: según sea necesario, se apila una estrategia, se trabaja según ella, y posteriormente se desapila y se continúa trabajando con la estrategia anterior. Cuando la pila de estrategias se encuentra vacía, por default se apila la estrategia de exploración.
+
+Cada una de las estrategias se define como \emph{apropiativa} o \emph{no apropiativa}. Esta característica es la que
+
+El agente además posee una pila de acciones, que corresponden siempre a la estrategia en el tope de la pila de estrategias.
 
 \end{document}
