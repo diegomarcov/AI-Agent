@@ -198,7 +198,7 @@ search(F0, Path, Cost):-
 	add_to_frontier(NN, F2, F3),
 	search(F3, Path, Cost).
 
-search(_, [], inf):- retractall(visitado(_)).
+search(_, [], 100000):- retractall(visitado(_)).
 
 build_path(node(Pos, Cost, [], D), [node(Pos, Cost, [], D)]).
 build_path(node(Pos, Cost, [Parent], D), Path):-
