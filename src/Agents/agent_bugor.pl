@@ -16,8 +16,6 @@
 :- dynamic map/3.
 :- dynamic turno/1.
 :- dynamic posadas/1.
-% oro(nombre, ubicacion, turno)
-% ubicacion = [X, Y] | nombre_de_agente
 :- dynamic oro/3.
 :- dynamic agentes/1.
 :- dynamic ag_name/1.
@@ -25,7 +23,6 @@
 :- dynamic current_pos/1.
 :- dynamic me/5.
 :- dynamic sight/1.
-% :- dynamic attacking/1.
 
 % Predicados dinamicos para el comportamiento
 :- dynamic strategy_stack/1.
@@ -39,26 +36,11 @@ planning_stack([]).
 attacking([]).
 
 run:-
-%   debug(info, 'ANTES DEL GET_PERCEPT'),
 	get_percept(Perc),
-%   debug(info, 'DESPUES DEL GET_PERCEPT'),
-%   debug(info, 'ANTES DEL UPDATE_STATE'),
 	update_state(Perc),
-%   debug(info, 'DESPUES DEL UPDATE_STATE'),
-	% decide_action(Action),
-	% ag_name(AgName),
-	% display_ag(AgName, Perc), nl,
-	% agregado esto para que el agente actue en modo joystick
-	% write('ACCION?: '), read(Action),
-%   debug(info, 'ANTES DEL DECIDE_STRATEGY'),
 	decide_strategy,
-%   debug(info, 'DESPUES DEL DECIDE_STRATEGY'),
-%   debug(info, 'ANTES DEL DECIDE_ACTION'),
 	decide_action(Action),
-%   debug(info, 'DESPUES DEL DECIDE_ACTION'),
-%   debug(info, 'ANTES DEL DO_ACTION'),
 	do_action(Action),
-%   debug(info, 'DESPUES DEL DO_ACTION'),
 	run.
 
 start_ag:- 

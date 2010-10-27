@@ -1,5 +1,4 @@
 fleeHostel_strat:-
-	%gtrace,
 	planning_stack([]),
 	me(P, _, _, _, _),
 	not(posadas(P)),

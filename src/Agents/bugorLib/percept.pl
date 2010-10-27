@@ -27,14 +27,12 @@ processPosition(X, Y, Land, _Objects):-
 % Recorre todos los elementos a la vista
 % y los analiza por separado
 save_map(Vision):-
-	debug(info, '##################################'),
+	write('##################################'), nl,
 	forall(member([[X, Y], Land, Objects], Vision), processPosition(X, Y, Land, Objects)), % Guardo el mapa y borro el oro
-	findall([X, Y, Land], map(X, Y, Land), Mapa),
-	term_to_atom(Mapa, M),
-	debug_term(info, 'Known Map: ', M),
+	print_map,
 	objects_at_sight(Vision, ObjectsAtSight), % Recolectamos los objetos que vemos
 	replace(sight(_), sight(ObjectsAtSight)),
-	debug_term(warning, 'At sight: ', ObjectsAtSight),
+	debug_term(info, 'At sight: ', ObjectsAtSight),
 	forall(member([Pos, Obj], ObjectsAtSight), (analize_things([Pos, Obj]))),
 	findall([X, Y], posadas([X,Y]), P),
 	debug_term(info, 'Known hostels: ', P),
@@ -44,8 +42,8 @@ save_map(Vision):-
 	debug_term(info, 'Known agents: ', A),
 	strategy_stack(St),
 	planning_stack(PSt),
-	debug_term(warning, 'Strategy stack ', St),
-	debug_term(warning, 'Planning stack ', PSt).
+	debug_term(info, 'Strategy stack ', St),
+	debug_term(info, 'Planning stack ', PSt).
 
 % Analiza un elemento visto
 % Si es oro o posada, recuerdo
@@ -116,17 +114,20 @@ analize_things([_Pos, Obj]):-
 % Predicado para filtrar atributos de agente
 %
 % Si se lo vio atacando a otro, y ya conocemos a este agente:
-remember_agent(Name, _, [previous_turn_action, attack(_)]):-
-	agentes(A),
-	member(agente(Name, Attack, Picking, Slow), A), % Si ya vimos al agente
-	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
-	NewAttack is Attack + 1,
-	replace(agentes(_), agentes(NewA)), % Guardamos la lista sin este agente
-	insert_agent(Name, NewAttack, Picking, Slow). % Guardamos al agente con los nuevos datos
+% remember_agent(Name, _, [previous_turn_action, attack(_)]):-
+%   agentes(A),
+%   member(agente(Name, Attack, Picking, Slow), A), % Si ya vimos al agente
+%   subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
+%   NewAttack is Attack + 1,
+%   replace(agentes(_), agentes(NewA)), % Guardamos la lista sin este agente
+%   insert_agent(Name, NewAttack, Picking, Slow). % Guardamos al agente con los nuevos datos
 
 % Si el predicado member falla, es decir, nunca vimos a este agente:
-remember_agent(Name, _, [previous_turn_action, attack(_)]):-
-	insert_agent(Name, 1, 0).
+% remember_agent(Name, _, [previous_turn_action, attack(_)]):-
+%   insert_agent(Name, 1, 0).
+
+remember_agent(_, _, [attacked_by, Ags]):-
+	add_attacked(Ags).
 
 % Analogamente para los tesoros recojidos
 remember_agent(Name, _, [previous_turn_action, pickup(TName)]):-
@@ -143,6 +144,7 @@ remember_agent(Name, _, [previous_turn_action, pickup(TName)]):-
 remember_agent(Name, Pos, [previous_turn_action, drop(TName)]):-
 	agentes(A),
 	member(agente(Name, Attack, Picking, Slow), A), % Si ya vimos al agente
+	oro(TName, Name, _),
 	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
 	NewPick is Picking - 1,
 	replace(agentes(_), agentes(NewA)),
@@ -234,3 +236,95 @@ agent_priority(agente(_Name, Attack, Pick, _Slow), 1):-
 save_turn(Turn):-
 	retract(turno(_)),
 	assert(turno(Turn)).
+
+add_attacked([]).
+add_attacked([Name|Ags]):-
+	add_attacked(Ags),
+	ag_name(Bugor),
+	Name \= Bugor,
+	agentes(A),
+	member(agente(Name, Attack, Picking, Slow), A), % Si ya vimos al agente
+	subtract(A, [agente(Name, Attack, Picking, Slow)], NewA), % Lo sacamos temporalmente de la lista
+	NewAttack is Attack + 1,
+	replace(agentes(_), agentes(NewA)), % Guardamos la lista sin este agente
+	insert_agent(Name, NewAttack, Picking, Slow). % Guardamos al agente con los nuevos datos
+
+add_attacked([Name|Ags]):-
+	add_attacked(Ags),
+	ag_name(Bugor),
+	Name \= Bugor,
+	insert_agent(Name, 1, 0, false).
+
+print_map:-
+	minX(MinX),
+	minY(MinY),
+	maxX(MaxX),
+	maxY(MaxY),
+	print_rows(MinX, MaxX, MinY, MaxY).
+
+minX(MinX):-
+	findall(X, map(X, _Y, _Land), Xs),
+	sort(Xs, [MinX|_]).
+minY(MinY):-
+	findall(Y, map(_X, Y, _Land), Ys),
+	sort(Ys, [MinY|_]).
+maxX(MaxX):-
+	findall(X, map(X, _Y, _Land), Xs),
+	sort(Xs, SXs),
+	reverse(SXs, [MaxX|_]).
+maxY(MaxY):-
+	findall(Y, map(_X, Y, _Land), Ys),
+	sort(Ys, SYs),
+	reverse(SYs, [MaxY|_]).
+
+print_rows(MaxX, MaxX, Y, MaxY):-
+	print_row(MaxX, Y, MaxY),nl.
+
+print_rows(X, MaxX, Y, MaxY):-
+	print_row(X, Y, MaxY),nl,
+	NX is X + 1,
+	print_rows(NX, MaxX, Y, MaxY).
+
+print_row(X, MaxY, MaxY):-
+	print_cell(X, MaxY).
+
+print_row(X, Y, MaxY):-
+	print_cell(X, Y),
+	NY is Y + 1,
+	print_row(X, NY, MaxY).
+
+print_cell(X, Y):-
+	me([X, Y], _, _, _, _),
+	write('@').
+
+print_cell(X, Y):-
+	oro(_, [X, Y], _),
+	posadas([X, Y]),
+	write('&').
+
+print_cell(X, Y):-
+	oro(_, [X, Y], _),
+	write('*').
+
+print_cell(X, Y):-
+	posadas([X, Y]),
+	write('#').
+
+print_cell(X, Y):-
+	map(X, Y, plain),
+	write('.').
+
+print_cell(X, Y):-
+	map(X, Y, mountain),
+	write('^').
+
+print_cell(X, Y):-
+	map(X, Y, forest),
+	write('$').
+
+print_cell(X, Y):-
+	map(X, Y, water),
+	write('~').
+
+print_cell(_X, _Y):-
+	write('?').
