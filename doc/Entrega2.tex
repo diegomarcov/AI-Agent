@@ -1,0 +1,80 @@
+\documentclass[a4paper,oneside]{report}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{fullpage}
+\usepackage{listings}
+\usepackage{gmverb}
+\usepackage[colorlinks=true,urlcolor=black,linkcolor=black]{hyperref}%
+\usepackage{listings}
+
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+\lstset{language=,keywordstyle=\ttfamily,stringstyle=\ttfamily}
+\lstset{breaklines}
+
+\title{Inteligencia Artificial\\Comportamiento del agente}
+
+\author{Diego Marcovecchio (LU: 83815)\and Tomás Touceda (LU: 84024)}
+
+\date{29 de Octubre de 2010}
+
+\begin{document}
+\lstset{frame=single}	
+\maketitle
+		
+\tableofcontents
+
+\chapter*{Introducción}
+\section*{Descripción}
+
+Este proyecto consiste en la implementación del comportamiento del agente Bugor en el entorno provisto por la cátedra. El comportamiento del agente se decide dinámicamente en cada turno en base a la percepción que se mostró durante la primer entrega, y los objetivos principales del agente son explorar la mayor cantidad del mapa posible, obtener la mayor cantidad de tesoros, y aumentar su fight\_skill de la manera menos peligrosa posible.
+
+\section*{Modularización}
+Para facilitar la lectura del código, la implementación de Bugor está separada en diferentes módulos en la carpeta /bugorLib. A continuación describiremos brevemente el contenido de cada uno, y más adelante se detallarán las estrategias empleadas:
+\begin{itemize}
+	\item \textbf{astar.pl}: incluye la implementación del algoritmo de búsqueda A*.
+	\item \textbf{auxiliares.pl}: contiene predicados auxiliares y de debugging.
+	\item \textbf{behave.pl}: el código de este módulo es el encargado de decidir cuáles de las estrategias implementadas seguirá el agente. Cada estrategia tiene un módulo propio de implementación, y en este únicamente se decide cuál es conveniente utilizar.
+	\item \textbf{percept.pl}: incluye la programación de la percepción del agente.
+	\item \textbf{/strategies}	
+		\begin{itemize}
+			\item attack.pl: contiene el código de la estrategia de ataque del agente.
+			\item flee.pl: incluye el código utilizado cuando el agente es atacado por otros.
+			\item fleehostel.pl: contiene el código del agente para dirigirse inmediatamente al hotel más cercano.
+			\item general.pl: incluye el código del agente dedicado a explorar las zonas desconocidas del mapa.
+		\end{itemize}
+\end{itemize}
+
+\chapter{Mejoras en la percepción}
+
+Si bien la base de la percepción fue diseñada en la primer entrega del proyecto, se realizaron algunas correcciones y mejoras en ésta.
+
+Por empezar, se corrigió un bug que resultaba en que si un agente tiraba al suelo un tesoro, la cantidad de tesoros mantenida por dicho agente podía ser negativa. Por otro lado, también se agregó el hecho de que los ataques por la espalda a Bugor queden también registrados en la caracterización de los agentes rivales.
+
+Se agregó, además, la utilización del predicado dinámico \textbf{sight} que refleja de manera conveniente el campo visual de Bugor. Este predicado se actualiza todos los turnos, y es utilizado en la mayoría de las estrategias para decidir la acción a realizar.
+
+\chapter{Búsqueda}
+\section{Características del algoritmo}
+En todos los casos, el algoritmo utilizado para encontrar caminos es A*.
+
+En nuestra implementación, el algoritmo tiene una única meta; esto significa que para decidir cuál es el camino más corto entre un conjunto de \emph{n} metas, se realizan \emph{n} ejecuciones del algoritmo, y se comparan los costos de cada una, seleccionando finalmente la meta que resulte más barata. Una alternativa posible es implementar el algoritmo para buscar en un conjunto de metas, lo cual significaría cortar antes el proceso de búsqueda para metas más cercanas; el problema es que esta implementación, con muchas metas lejanas, resultaba en un costo de memoria mucho mayor al deseado, y la ganancia en velocidad de cómputo del camino no es tan grande (ambas posibilidades tienen el mismo orden de ejecución).
+
+\section{Representación de nodos}
+
+Los nodos en el algoritmo de búsqueda están representados por su posición en el mapa, el costo parcial asociado, el nodo antecesor y una dirección. La posición contiene una lista \emph{[X,Y]} con las coordenadas; el nodo antecesor indica desde qué nodo se pasó al nodo actual; la dirección indica hacia qué punto cardinal estará mirando el agente, y el costo parcial asociado se calcula según el costo del nodo antecesor, más el costo de desplazamiento (1 si es \emph{plain}, 2 si es \emph{mountain}) más el costo de giro (0 si la dirección en el nodo es la misma que la dirección en el padre, 1 si es necesario realizar un giro de un nodo al otro). Nótese que es posible construir el path a un nodo concatenando recursivamente todos los antecesores.
+
+Los únicos nodos que se generan son aquellas posiciones del mapa cuyo terreno es \emph{plain} o \emph{mountain}. De esta manera, los bosques, el agua, y los trozos de mapa no explorados no son considerados en la búsqueda. Esto convierte a nuestra implementación en un algoritmo pesimista, dado que si es absolutamente necesario cruzar por una zona desconocida del mapa, el algoritmo fallará.
+
+\section{Función heurística}
+
+La función heurística empleada en nuestro A* es la \emph{distancia manhattan} de un nodo a la meta. Dado que la meta es única, esta función no tiene ningún tipo de complicaciones, y garantiza subestimar el costo de movimiento.
+
+\section{Resultado del algoritmo}
+
+De existir un camino por las partes ya exploradas del mapa hacia la meta deseada, el algoritmo siempre lo encuentra; el resultado de la aplicación de nuestro A* es una lista de nodos; en la práctica, como se verá más adelante, dicha lista se traduce a una secuencia de acciones a realizar.
+
+\section{Ejemplos}
+
+PONÉ LOS EJEMPLOS, PELADOOOOOOOOOO... BIOOOOOOOOOOOMMMMMMMMMMMMMMMMMMM!
+
+\end{document}
