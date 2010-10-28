@@ -115,15 +115,27 @@ Por último, en caso de que el mapa ya esté completamente explorado y Bugor no re
 
 Esta estrategia es la encargada de definir el comportamiento de Bugor al recoger un tesoro.
 
-El agente está diseñado para apilar esta estrategia \textbf{únicamente} cuando tiene un tesoro dentro de su campo visual. Dado ese caso, Bugor intentará ir a buscarlo inmediatamente. En caso de que dicho tesoro sea alcanzable caminando por las porciones de mapa conocido, se apila la secuencia de acciones a realizar para llegar a dicho tesoro en la pila de acciones, se realizan inmediatamente para intentar recogerlo, y se continúa explorando (es decir, se desapila la estrategia Treasures de la pila). Si el tesoro es, por el momento, inalcanzable, se prosigue explorando como se planeó originalmente y el tesoro queda igualmente recordado en la "`memoria"' del agente. %esto está bien? o EN ESTA ESTRATEGIA va a buscar el tesoro más cercano que tiene?
+El agente está diseñado para apilar esta estrategia \textbf{únicamente} cuando recuerda la existencia de al menos un tesoro. Sabiendo esto, la estrategia de Bugor es buscar un camino a cada uno de los tesoros que recuerda; cada uno de estos tesoros se ordena de acuerdo al costo de ir a buscarlo y la cantidad de turnos que pasaron desde la última vez que dicho tesoro fue visto. 
+
+Una vez que la lista de tesoros se encuentra ordenada, se toma el primero de los tesoros y se apila la secuencia de acciones a realizar para llegar a dicho tesoro en la pila de acciones, se realizan inmediatamente para intentar recogerlo, y se continúa explorando (es decir, se desapila la estrategia Treasures de la pila). Si todos los tesoros que Bugor recuerda son, por el momento, inalcanzables, se prosigue explorando como se planeó originalmente y el tesoro queda igualmente recordado en la "`memoria"' del agente. %esto está bien? o estoy mandando fruta MAL?!
 
 
 \section{Flee}
 
 Bugor no es un agente particularmente agresivo, y si bien intentará combatir (como se detallará más adelante), la estrategia principal en caso de recibir un ataque es escapar lo más rápido y lejos posible, para minimizar el riesgo de quedar inconsciente.
 
-Para realizar esto, inmediatamente después de recibir un ataque, Bugor apilará esta estrategia en la pila; dado que ésta es la estrategia con mayor prioridad de todas, no podrá ser apropiada por otra. Una vez que esta estrategia está en el tope de la pila, Bugor se dirigirá de manera automática al punto más alejado que conozca en el mapa.
+Para realizar esto, inmediatamente después de recibir un ataque, Bugor apilará esta estrategia en la pila; dado que ésta es la estrategia con mayor prioridad de todas, no podrá ser apropiada por otra. Una vez que esta estrategia está en el tope de la pila, Bugor se dirigirá de manera automática al punto más alejado que conozca en el mapa. Para realizar esto, se encuentran todas las locaciones del mapa con \emph{plain} o \emph{mountain}, y se ordenan heurísticamente de acuerdo a la \emph{distancia manhattan} de la posición actual de Bugor. El punto con mayor valor heurístico se convierte en la nueva meta del agente, que realiza la búsqueda de un camino hasta dicha posición, lo traduce a una secuencia de acciones que es apilada en la estructura correspondiente, y las realiza sin ningún tipo de interrupciones. En caso de que el punto con valor heurístico más alto no sea accesible momentáneamente (es decir, que haya que cruzar por una "`zona negra"' del mapa), se toma la siguiente posición más alejada y ésta se convierte en la nueva meta de búsqueda. Este procedimiento se repite hasta obtener un camino efectivo a algún punto lejano del mapa.
 
-\section{}
+Una vez que finaliza la huída, el agente resume la estrategia anterior que estaba realizando (es decir, se desapila la estrategia Flee de la pila de estrategias). Nótese que el hecho de resumir la estrategia anterior no significa realizar exactamente las mismas acciones. A modo de ejemplo, si Bugor se encontraba buscando tesoros y fue atacado, huirá al punto más lejano posible en el mapa, y al finalizar continuará buscando tesoros. Dada la nueva locación del agente, muy probablemente haya otros tesoros más cercanos que el que se buscaba originalmente, así que las metas del agente cambiarán adecuadamente para buscar el tesoro más conveniente.
+
+\section{Flee to hostel}
+
+VER INTERACCIÓN CON FLEE. WUT?!?!
+
+\section{Attack}
+
+La estrategia de ataque es complicada de clasificar en el sentido de que no es considerada una estrategia en sí misma, pues en ningún momento es colocada en la pila de estrategias; lo que ocurre es que cuando la situación se presenta de manera favorable, Bugor golpeará a los agentes rivales para aumentar su fight\_skill e intentar dejar a sus enemigos inconscientes. No está en la naturaleza de Bugor realizar planificaciones complejas para vencer a los rivales, si no que se limita a cumplir el resto de sus objetivos y atacar de manera conveniente para correr el menor riesgo posible, y obtener eventuales beneficios.
+
+Una situación de ataque se considera favorable cuando el agente rival se encuentra dentro del rango de ataque de Bugor, pero \emph{de espaldas} a éste. Concretamente, Bugor únicamente realizará ataques mientras esté fuera del campo visual de los agentes rivales, lo que le brindará la ventaja de ser el que comience la lucha y pegue la mayor cantidad de golpes (y, recordemos, una vez que el rival responda los ataques, Bugor escapará).
 
 \end{document}
