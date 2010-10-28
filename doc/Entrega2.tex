@@ -109,7 +109,7 @@ Mientras el agente esté aplicando esta estrategia, siempre que vea oro dentro de
 
 Una vez que el mapa esté completamente explorado, si el agente recuerda la existencia de tesoros que no pudo recoger, va en busca de ellos. Para definir cuál de los tesoros será buscado se realiza un balance entre la cantidad de turnos que pasaron desde la última vez que éste fue visto, y el costo de ir a buscarlo.
 
-Por último, en caso de que el mapa ya esté completamente explorado y Bugor no recuerde la existencia de tesoros pendientesde ser recogidos, simplemente se desplazará al azar por el mapa.
+Por último, en caso de que el mapa ya esté completamente explorado y Bugor no recuerde la existencia de tesoros pendientes de ser recogidos, simplemente se desplazará al azar por el mapa.
 
 \section{Treasures}
 
@@ -120,9 +120,9 @@ El agente está diseñado para apilar esta estrategia \textbf{únicamente} cuando t
 
 \section{Flee}
 
-Bugor no es un agente particularmente agresivo, y si bien intentará combatir (como se detallará más adelante), la estrategia principal en caso de recibir un ataque es escapar lo más rápido y lejos posible.
+Bugor no es un agente particularmente agresivo, y si bien intentará combatir (como se detallará más adelante), la estrategia principal en caso de recibir un ataque es escapar lo más rápido y lejos posible, para minimizar el riesgo de quedar inconsciente.
 
-Para realizar esto, inmediatamente después de recibir un ataque, Bugor apilará esta estrategia
+Para realizar esto, inmediatamente después de recibir un ataque, Bugor apilará esta estrategia en la pila; dado que ésta es la estrategia con mayor prioridad de todas, no podrá ser apropiada por otra. Una vez que esta estrategia está en el tope de la pila, Bugor se dirigirá de manera automática al punto más alejado que conozca en el mapa.
 
 \section{}
 
