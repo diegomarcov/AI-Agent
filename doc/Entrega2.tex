@@ -5,7 +5,7 @@
 \usepackage{listings}
 \usepackage{gmverb}
 \usepackage[colorlinks=true,urlcolor=black,linkcolor=black]{hyperref}%
-\usepackage{listings}
+\usepackage{graphicx}
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
 
@@ -136,5 +136,25 @@ Una vez que finaliza la huída, el agente resume la estrategia anterior que estab
 Esta estrategia es la que hace que Bugor se dirija a descansar de la manera más conveniente posible. Es invocada en cualquier situación en la que la stamina del agente sea menor al 40\% total, y posee la prioridad máxima (al igual que la strategia Flee). Esto significa que, en el caso de que Bugor sea atacado, si su stamina es \textbf{mayor} al 40\% total huirá como se dijo en la estrategia anterior; pero si la stamina resulta \textbf{menor} al 40\% total, entonces huirá hacia el hotel más cercano. Concretamente, dado este último caso la pila de estrategias puede contener una sucesión de estrategias \emph{Flee-FleeToHostel-Flee-FleeToHostel...} en su tope. Si bien puede resultar estéticamente desagradable, ésto no resulta en un problema, porque el agente actúa de manera consistente y, una vez llegado a la meta, todas estas estrategias son desapiladas.
 
 \emph{Flee to hostel} actúa obteniendo primero todas las posadas que el agente conoce; para cada una de ellas, se busca un camino utilizando nuestra implementación de A*. Las posada que tenga un camino con el mínimo costo (es decir, la más cercana) es marcada como meta, y Bugor se dirige automáticamente hacia allí (y como se dijo anteriormente, dado que esta estrategia tiene la prioridad máxima, no podrá ser apropiada por ninguna otra). En caso de que ninguna de las posadas sea momentáneamente accesible, el agente vuelve a la fase de exploración para eliminar las "`zonas negras"' del mapa, e inmediatamente después de que alguna de las posadas sea accesible, se dirigirá a ella.
+
+\section{Grafo de transición}
+
+Para facilitar la comprensión, a continuación incluimos un grafo con las posibles transiciones entre estrategias, ejemplificando con una situación en la que podría ocurrir cada una.
+
+Las transiciones están definidas de acuerdo a la prioridad mencionada para cada una de las estrategias. Para todos los casos en los que \textbf{no} se ejemplifica una transición, dicha transición ocurre cuando la estrategia \emph{origen} finaliza y es desapilada de la pila de estrategias, dejando como nuevo tope a la estrategia \emph{destino}.
+
+\includegraphics[width=150mm]{agentstates.png}
+
+\begin{itemize}
+	\item Explore -\textgreater  Treasures: esta transición ocurre inmediatamente después de que Bugor encuentre un tesoro en su campo visual.
+	\item Explore -\textgreater  Flee to hostel: ocurre en cualquier caso en el que el agente esté explorando y su stamina actual sea menos del 40\% de su stamina máxima.
+	\item Explore -\textgreater  Flee: ocurre inmediatamente después de que Bugor reciba un ataque.
+	\item Explore -\textgreater  Attack: ocurre cuando Bugor ve un agente rival en su campo visual; Bugor evaluará si es conveniente atacarlo, o continuar explorando sin provocar conflictos.
+	\item Treasures to Flee to hostel: si el agente se está dirigiendo a recoger un tesoro y se da cuenta de que su stamina bajó a menos del 40\% del total, priorizará descansar para evitar quedar inconsciente. Nótese que no hay una transición \emph{de vuelta}, porque una vez que el agente haya descansado, volverá a la estrategia de exploración (en donde reevaluará hacia qué sector del mapa dirigirse para recoger tesoros).
+	\item Treasures -\textgreater  Flee: si el agente está dirigiéndose a recoger un tesoro pero es atacado, se escapará inmediatamente.
+	\item Flee -\textgreater Flee to hostel: si el agente está escapando (porque fue golpeado) y su stamina es menor al 40\%, entonces se dirigirá al hotel más cercano.
+	\item Flee to hostel -\textgreater Flee: si el agente estaba dirigiéndose a un hotel y es atacado, inmediatamente intenta alejarse; luego de unas pocas acciones, Bugor volverá a intentar dirigirse hacia el hotel, con la esperanza de que, si el agente rival continúa al acecho en esa zona, no sea lo suficientemente rápido para atacarlo de vuelta.
+
+\end{itemize}
 
 \end{document}
