@@ -30,7 +30,7 @@
 Este proyecto consiste en la implementación del comportamiento del agente Bugor en el entorno provisto por la cátedra. El comportamiento del agente se decide dinámicamente en cada turno en base a la percepción que se mostró durante la primer entrega, y los objetivos principales del agente son explorar la mayor cantidad del mapa posible, obtener la mayor cantidad de tesoros, y aumentar su fight\_skill de la manera menos peligrosa posible.
 
 \section{Modularización}
-Para facilitar la lectura del código, la implementación de Bugor está separada en diferentes módulos en la carpeta /bugorLib. A continuación describiremos brevemente el contenido de cada uno, y más adelante se detallarán las estrategias empleadas:
+Para facilitar la lectura del código, la implementación de Bugor está separada en diferentes módulos en la carpeta \textbf{/bugorLib}. A continuación describiremos brevemente el contenido de cada uno, y más adelante se detallarán las estrategias empleadas:
 \begin{itemize}
 	\item \textbf{astar.pl}: incluye la implementación del algoritmo de búsqueda A*.
 	\item \textbf{auxiliares.pl}: contiene predicados auxiliares y de debugging.
@@ -64,7 +64,7 @@ En nuestra implementación, el algoritmo tiene una única meta; esto significa que
 
 \section{Representación de nodos}
 
-Los nodos en el algoritmo de búsqueda están representados por su posición en el mapa, el costo parcial asociado, el nodo antecesor y una dirección. La posición es una lista \emph{[X,Y]} con las coordenadas; el nodo antecesor indica desde qué nodo se pasó al nodo actual; la dirección indica hacia qué punto cardinal estará mirando el agente, y el costo parcial asociado se calcula según el costo del nodo antecesor, más el costo de desplazamiento (1 si es \emph{plain}, 2 si es \emph{mountain}) más el costo de giro (0 si la dirección en el nodo es la misma que la dirección en el padre, 1 si es necesario realizar un giro de un nodo al otro). Nótese que es posible construir el path a un nodo concatenando recursivamente todos los antecesores.
+Los nodos en el algoritmo de búsqueda están representados por su posición en el mapa, el costo parcial asociado, el nodo antecesor y una dirección. La posición es una lista \emph{[X,Y]} con las coordenadas; el nodo antecesor indica desde qué nodo se pasó al nodo actual; la dirección indica hacia qué punto cardinal estará mirando el agente, y el costo parcial asociado se calcula según el costo del nodo antecesor, más el costo de desplazamiento (1 si es \emph{plain}, 2 si es \emph{mountain}) más el costo de giro (0 si la dirección en el nodo es la misma que la dirección en el padre, 1 si es necesario realizar un giro de un nodo al siguiente). Nótese que es posible construir el path a un nodo concatenando recursivamente todos los antecesores.
 
 Los únicos nodos que se generan son aquellas posiciones del mapa cuyo terreno es \emph{plain} o \emph{mountain}. De esta manera, los bosques, el agua, y los trozos de mapa no explorados no son considerados en la búsqueda. Esto convierte a nuestra implementación en un algoritmo pesimista, dado que asume que no se puede caminar por las partes desconocidas del mapa. Se encuentra definida, adicionalmente, una constante para indicar que el costo de un camino es "`infinito"', utilizada para indicar que un camino dado no puede llevar a la meta.
 
@@ -82,10 +82,6 @@ De existir un camino por las partes ya exploradas del mapa hacia la meta deseada
 
 En caso de que sea absolutamente necesario cruzar por una zona desconocida del mapa, el algoritmo devolverá un camino vacío y con el costo "`infinito"' definido por la constante mencionada anteriormente.
 
-\section{Ejemplos}
-
-PONÉ LOS EJEMPLOS, PELADOOOOOOOOOO... BIOOOOOOOOOOOMMMMMMMMMMMMMMMMMMM!
-
 \chapter{Estrategias}
 
 Dependiendo del momento, el estado y la percepción del mundo, Bugor puede utilizar diferentes estrategias de comportamiento para lograr sus intenciones (principalmente: no morir, conseguir oro, explorar y mejorar su fight\_skill). El manejo de las estrategias en el agente es realizado mediante una pila: según sea necesario, se apila una estrategia, se trabaja de acuerdo a ella, y posteriormente se desapila y se continúa trabajando con la estrategia anterior. Cuando la pila de estrategias se encuentra vacía, por default se apila la estrategia de exploración.
@@ -97,7 +93,7 @@ El agente además posee una pila de acciones, que corresponden siempre a la estra
 Pasaremos ahora a describir las estrategias implementadas.
 
 \section{General}
-La estrategia "`general"' (o "`estrategia de exploración"') es utilizada por Bugor para explorar pedazos de mapa que no conocía anteriormente. Sabiendo que el agente posee una representación interna del mapa del mundo, el primer paso es obtener todos los \emph{nodos frontera} que sean \emph{plain} o \emph{mountain} en dicho mapa interno. Un nodo es considerado \emph{frontera} cuando tiene al menos un vecino que no se conoce.
+La estrategia "`general"' (o "`estrategia de exploración"') es utilizada por Bugor para explorar pedazos de mapa que no conocía anteriormente. Sabiendo que el agente posee una representación interna del mapa del mundo, el primer paso es obtener todos los \emph{nodos frontera} que sean \emph{plain} o \emph{mountain} en dicho mapa interno, como se muestra en la figura ¡¡¡¡¡¡¡FrontierNodes!!!!!!!!!!. Un nodo es considerado \emph{frontera} cuando tiene al menos un vecino que no se conoce.
 
 A continuación, todos estos nodos son ordenados según la \emph{distancia manhattan} respecto a la posición actual de Bugor. El nodo frontera con la menor distancia manhattan es marcado como meta, y el agente se dirige hacia allí.
 
@@ -107,24 +103,24 @@ En el caso de que el nodo elegido no pueda ser accedido (es decir, cuando el cos
 
 Mientras el agente esté aplicando esta estrategia, siempre que vea oro dentro de su campo visual, intentará ir a buscarlo inmediatamente; para ésto se apila la estrategia \emph{Treasures} que se describe a continuación en la pila de estrategias.
 
-Una vez que el mapa esté completamente explorado, si el agente recuerda la existencia de tesoros que no pudo recoger, va en busca de ellos. Para definir cuál de los tesoros será buscado se realiza un balance entre la cantidad de turnos que pasaron desde la última vez que éste fue visto, y el costo de ir a buscarlo.
+Una vez que el mapa esté completamente explorado, si el agente recuerda la existencia de tesoros que no pudo recoger, coloca su meta de exploración en la posición de dichos tesoros. Para definir cuál de los tesoros será buscado se realiza un balance entre la cantidad de turnos que pasaron desde la última vez que éste fue visto, y el costo de ir a buscarlo. Esto se diferencia de la estrategia Treasures en que únicamente ocurre cuando el mapa fue totalmente explorado, y en que los tesoros pueden estar en cualquier sector del mapa. La estrategia Treasures, en cambio, únicamente es utilizada cuando el agente divisa un tesoro dentro de su rango visual.
 
-Por último, en caso de que el mapa ya esté completamente explorado y Bugor no recuerde la existencia de tesoros pendientes de ser recogidos, simplemente se desplazará al azar por el mapa.
+Por último, en caso de que el mapa ya esté completamente explorado y Bugor no recuerde la existencia de tesoros pendientes de ser recogidos, simplemente seleccionará locaciones al azar del mapa conocido y se desplazará hacia ellas (pudiendo, potencialmente, encontrar nuevos tesoros que antes no estaban, o buenas oportunidades para atacar agentes rivales).
 
 \section{Treasures}
 
 Esta estrategia es la encargada de definir el comportamiento de Bugor al recoger un tesoro.
 
-El agente está diseñado para apilar esta estrategia \textbf{únicamente} cuando recuerda la existencia de al menos un tesoro. Sabiendo esto, la estrategia de Bugor es buscar un camino a cada uno de los tesoros que recuerda; cada uno de estos tesoros se ordena de acuerdo al costo de ir a buscarlo y la cantidad de turnos que pasaron desde la última vez que dicho tesoro fue visto. 
+El agente está diseñado para apilar esta estrategia \textbf{únicamente} cuando divisa un tesoro. Sabiendo esto, la estrategia de Bugor es buscar un camino a cada uno de los tesoros que se encuentran en su campo visual; estos tesoros se ordenan de acuerdo al costo del camino que se debe recorrer para ir a buscarlo.
 
-Una vez que la lista de tesoros se encuentra ordenada, se toma el primero de los tesoros y se apila la secuencia de acciones a realizar para llegar a dicho tesoro en la pila de acciones, se realizan inmediatamente para intentar recogerlo, y se continúa explorando (es decir, se desapila la estrategia Treasures de la pila). Si todos los tesoros que Bugor recuerda son, por el momento, inalcanzables, se prosigue explorando como se planeó originalmente y el tesoro queda igualmente recordado en la "`memoria"' del agente. %esto está bien? o estoy mandando fruta MAL?!
+Una vez que la lista de tesoros se encuentra ordenada, se toma el primero de los tesoros y se apila la secuencia de acciones a realizar para llegar a dicho tesoro en la pila de acciones, se realizan inmediatamente para intentar recogerlo, y se continúa explorando (es decir, se desapila la estrategia Treasures de la pila). Si todos los tesoros del campo visual de Bugor son, por el momento, inalcanzables, se prosigue explorando como se planeó originalmente y el tesoro queda igualmente recordado en la "`memoria"' del agente. %esto está bien? o estoy mandando fruta MAL?!
 
 
 \section{Attack}
 
 La estrategia de ataque es complicada de clasificar en el sentido de que no es considerada una estrategia en sí misma, pues en ningún momento es colocada en la pila de estrategias; lo que ocurre es que cuando la situación se presenta de manera favorable, Bugor golpeará a los agentes rivales para aumentar su fight\_skill e intentar dejar a sus enemigos inconscientes. No está en la naturaleza de Bugor realizar planificaciones complejas para vencer a los rivales, si no que se limita a cumplir el resto de sus objetivos y atacar de manera conveniente para correr el menor riesgo posible, y obtener eventuales beneficios.
 
-Una situación de ataque se considera favorable cuando el agente rival se encuentra dentro del rango de ataque de Bugor, pero \emph{de espaldas} a éste. Concretamente, Bugor únicamente realizará ataques mientras esté fuera del campo visual de los agentes rivales, lo que le brindará la ventaja de ser el que comience la lucha y pegue la mayor cantidad de golpes (y, recordemos, una vez que el rival responda los ataques, Bugor escapará).
+Una situación de ataque se considera favorable cuando el agente rival se encuentra dentro del rango de ataque de Bugor, pero \emph{de espaldas} a éste. Concretamente, Bugor únicamente realizará ataques mientras esté fuera del campo visual de los agentes rivales, lo que le brindará la ventaja de ser el que comience la lucha y pegue la mayor cantidad de golpes (y, como se verá a continuación, una vez que el rival responda los ataques, Bugor escapará).
 
 
 \section{Flee}
@@ -137,7 +133,7 @@ Una vez que finaliza la huída, el agente resume la estrategia anterior que estab
 
 \section{Flee to hostel}
 
-Ésta estrategia es la que hace que Bugor se dirija a descansar de la manera más conveniente posible. Es invocada en cualquier situación en la que la stamina del agente sea menor al 40\% total, y posee la prioridad máxima (al igual que la strategia Flee). Esto significa que, en el caso de que Bugor sea atacado, si su stamina es \textbf{mayor} al 40\% total huirá como se dijo en la estrategia anterior; pero si la stamina resulta \textbf{menor} al 40\% total, entonces huirá hacia el hotel más cercano. Concretamente, dado este último caso la pila de estrategias puede contener una sucesión de estrategias \emph{Flee-FleeToHostel-Flee-FleeToHostel...} en su tope. Si bien puede resultar estéticamente desagradable, ésto no resulta en un problema, porque el agente actúa de manera consistente y, una vez llegado a la meta, todas estas estrategias son desapiladas.
+Esta estrategia es la que hace que Bugor se dirija a descansar de la manera más conveniente posible. Es invocada en cualquier situación en la que la stamina del agente sea menor al 40\% total, y posee la prioridad máxima (al igual que la strategia Flee). Esto significa que, en el caso de que Bugor sea atacado, si su stamina es \textbf{mayor} al 40\% total huirá como se dijo en la estrategia anterior; pero si la stamina resulta \textbf{menor} al 40\% total, entonces huirá hacia el hotel más cercano. Concretamente, dado este último caso la pila de estrategias puede contener una sucesión de estrategias \emph{Flee-FleeToHostel-Flee-FleeToHostel...} en su tope. Si bien puede resultar estéticamente desagradable, ésto no resulta en un problema, porque el agente actúa de manera consistente y, una vez llegado a la meta, todas estas estrategias son desapiladas.
 
 \emph{Flee to hostel} actúa obteniendo primero todas las posadas que el agente conoce; para cada una de ellas, se busca un camino utilizando nuestra implementación de A*. Las posada que tenga un camino con el mínimo costo (es decir, la más cercana) es marcada como meta, y Bugor se dirige automáticamente hacia allí (y como se dijo anteriormente, dado que esta estrategia tiene la prioridad máxima, no podrá ser apropiada por ninguna otra). En caso de que ninguna de las posadas sea momentáneamente accesible, el agente vuelve a la fase de exploración para eliminar las "`zonas negras"' del mapa, e inmediatamente después de que alguna de las posadas sea accesible, se dirigirá a ella.
 
