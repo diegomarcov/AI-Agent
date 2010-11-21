@@ -1,0 +1,19 @@
+\BOOKMARK [0][-]{chapter.1}{Introducci\363n}{}
+\BOOKMARK [1][-]{section.1.1}{Descripci\363n}{chapter.1}
+\BOOKMARK [1][-]{section.1.2}{Modularizaci\363n}{chapter.1}
+\BOOKMARK [0][-]{chapter.2}{Estado del mundo}{}
+\BOOKMARK [1][-]{section.2.1}{Relaciones entre bloques}{chapter.2}
+\BOOKMARK [1][-]{section.2.2}{Acciones}{chapter.2}
+\BOOKMARK [0][-]{chapter.3}{B\372squeda}{}
+\BOOKMARK [1][-]{section.3.1}{Caracter\355sticas del algoritmo}{chapter.3}
+\BOOKMARK [1][-]{section.3.2}{Representaci\363n de nodos}{chapter.3}
+\BOOKMARK [1][-]{section.3.3}{Funci\363n heur\355stica}{chapter.3}
+\BOOKMARK [1][-]{section.3.4}{Control de nodos visitados}{chapter.3}
+\BOOKMARK [1][-]{section.3.5}{Resultado del algoritmo}{chapter.3}
+\BOOKMARK [0][-]{chapter.4}{Estrategias}{}
+\BOOKMARK [1][-]{section.4.1}{General}{chapter.4}
+\BOOKMARK [1][-]{section.4.2}{Treasures}{chapter.4}
+\BOOKMARK [1][-]{section.4.3}{Attack}{chapter.4}
+\BOOKMARK [1][-]{section.4.4}{Flee}{chapter.4}
+\BOOKMARK [1][-]{section.4.5}{Flee to hostel}{chapter.4}
+\BOOKMARK [1][-]{section.4.6}{Grafo de transici\363n}{chapter.4}
