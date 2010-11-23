@@ -125,13 +125,7 @@ remove(G, [G|Rem_Gs], Rem_Gs).
 % Verdadero si Goal es parte de la add_list de Action
 achieves(Action, G):-
   add_list(Action, AL),
-  in(G, AL).
-
-% in(+Goal, +AL).
-% Verdadero si G es parte de AL.
-in(G, [G|_AL]).
-in(G, [_|AL]):-
-  in(G, AL).
+  member(G, AL).
 
 % translate(+World, -Plan)
 % Dado un mundo World, traduce el mismo a una lista de acciones en Plan.
