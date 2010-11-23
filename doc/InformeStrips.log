@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (MiKTeX 2.8) (preloaded format=pdflatex 2010.4.18)  22 NOV 2010 14:22
+This is pdfTeX, Version 3.1415926-1.40.10 (MiKTeX 2.8) (preloaded format=pdflatex 2010.4.18)  23 NOV 2010 13:54
 entering extended mode
 **D:/UNS/IA/Proyectos/IA-Agente/doc/InformeStrips.tex
 (D:/UNS/IA/Proyectos/IA-Agente/doc/InformeStrips.tex
@@ -353,7 +353,7 @@ Cap\'{\i }tulo 2.
 
 ]
 Cap\'{\i }tulo 3.
-LaTeX Font Info:    Try loading font information for U+lasy on input line 91.
+LaTeX Font Info:    Try loading font information for U+lasy on input line 105.
 ("C:\Archivos de programa\MiKTeX 2.8\tex\latex\base\ulasy.fd"
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 ) [4
@@ -362,26 +362,36 @@ File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 Cap\'{\i }tulo 4.
 [5
 
-] (D:\UNS\IA\Proyectos\IA-Agente\doc\InformeStrips.aux) ) 
+]
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 170.
+
+ ("C:\Archivos de programa\MiKTeX 2.8\tex\latex\base\omscmr.fd"
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 170.
+ [6]
+[7] [8] (D:\UNS\IA\Proyectos\IA-Agente\doc\InformeStrips.aux) ) 
 Here is how much of TeX's memory you used:
- 7882 strings out of 495285
- 108833 string characters out of 3179741
- 252052 words of memory out of 3000000
- 10968 multiletter control sequences out of 15000+200000
+ 8053 strings out of 495285
+ 111440 string characters out of 3179741
+ 648052 words of memory out of 3000000
+ 10982 multiletter control sequences out of 15000+200000
  9252 words of font info for 33 fonts, out of 3000000 for 9000
  14 hyphenation exceptions out of 8191
- 37i,7n,37p,635b,1072s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Archivos de progra
-ma/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Archivos de program
-a/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Archivos de programa
-/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Archivos de programa/M
-iKTeX 2.8/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Archivos de programa/MiK
-TeX 2.8/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Archivos de programa/MiKTe
-X 2.8/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Archivos de programa/MiKTeX
- 2.8/fonts/type1/public/amsfonts/latxfont/lasy10.pfb>
-Output written on InformeStrips.pdf (6 pages, 113614 bytes).
+ 37i,7n,37p,716b,1759s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Archivos de 
+programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Archivos de p
+rograma/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Archivos de pr
+ograma/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Archivos de prog
+rama/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Archivos de progra
+ma/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Archivos de programa
+/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Archivos de programa/
+MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Archivos de programa/M
+iKTeX 2.8/fonts/type1/public/amsfonts/latxfont/lasy10.pfb>
+Output written on InformeStrips.pdf (9 pages, 160952 bytes).
 PDF statistics:
- 141 PDF objects out of 1000 (max. 8388607)
- 31 named destinations out of 1000 (max. 500000)
+ 341 PDF objects out of 1000 (max. 8388607)
+ 185 named destinations out of 1000 (max. 500000)
  109 words of extra memory for PDF output out of 10000 (max. 10000000)
 

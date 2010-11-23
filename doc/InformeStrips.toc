@@ -10,4 +10,4 @@
 \contentsline {section}{\numberline {3.2}Algoritmo general}{4}{section.3.2}
 \contentsline {chapter}{\numberline {4}Implementaci\'on}{5}{chapter.4}
 \contentsline {section}{\numberline {4.1}Descripci\'on de los predicados}{5}{section.4.1}
-\contentsline {section}{\numberline {4.2}C\'odigo}{5}{section.4.2}
+\contentsline {section}{\numberline {4.2}C\'odigo}{6}{section.4.2}
