@@ -3,7 +3,7 @@
 :- dynamic estadoInicial/1.
 
 % Estado inicial definido en el enunciado
-estadoInicial([sobre(a, c), libre(a), enMesa(c), enMesa(b), libre(b)]).
+estadoInicial([libre(a), libre(b), libre(c), enMesa(a), enMesa(b), enMesa(c)]).
 
 % Accion: apilar
 preconditions(apilar(A, B), [libre(A), libre(B), enMesa(A)]).
